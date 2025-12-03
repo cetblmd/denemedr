@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hasta Paneli - Sesli Komutlu</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+}
+
+/* Sol panel */
+.sol-panel {
+    width: 25%;
+    background-color: #d0e7f9;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: 0.3s;
+}
+
+/* Sol panel fullscreen grid modu */
+.sol-panel.fullscreen-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: flex-start;
+    gap: 24px;
+}
+.sol-panel.fullscreen-grid .kutu {
+    width: 360px;
+}
+
+/* Kartlar */
+.kutu {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    cursor: pointer;
+}
+.kutu-baslik {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.kutu .ac-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Sağ panel */
+.sag-icerik {
+    width: 75%;
+    padding: '0';//20px;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    overflow-y: auto;
+    transition: 0.3s;
+}
+
+/* Hasta kutusu */
+.hasta-kutu {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.hasta-kutu img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4CAF50;
+}
+.hasta-bilgiler {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 14px;
+}
+.hasta-bilgiler p {
+    margin: 1px 0;
+}
+
+/* Ek hasta bilgileri */
+.hasta-ayirici {
+    border-bottom: 1px solid #ccc;
+    margin: 10px 0;
+}
+.hasta-ek-bilgiler p {
+    margin: 3px 0;
+    font-size: 13px;
+}
+.hasta-uyari {
+    color: #b71c1c;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+/* Tablo */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+th, td {
+    text-align: left;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+.kucuk-resim {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+/* Muayene özet hücresi (kısaltma) */
+.muayene-ozet {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Hasta özet satırı (sağ panel üstü) */
+#hasta-ozet {
+    background:#d0e7f9;
+    color:black;
+    padding:8px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position: sticky;
+    top:0;
+    z-index:5;
+    font-size:16px;
+    justify-content: space-between;
+}
+#hasta-ozet img {
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid white;
+}
+
+/* Üst butonlar grupları */
+#hasta-ozet .ust-butons {
+    margin-left:auto;
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.btn-group {
+    display:flex;
+    gap:5px;
+    align-items:center;
+}
+.btn-group.view-actions {
+    margin-left:16px;
+    padding-left:12px;
+    border-left:1px solid rgba(0,0,0,0.15);
+}
+
+/* Yazılı butonlar */
+#hasta-ozet .ust-butons button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+#hasta-ozet .ust-butons button:hover {
+    background-color: #45a049;
+}
+
+/* İkon butonlar (üst satır) */
+/* Üst satırdaki YAZILI butonlar (İlaç Yönetimi, e-Nabız, SGK, SİNA) */
+#hasta-ozet .ust-butons .btn-group.primary-actions button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+/* Üst satırdaki İKON butonlar (🎤 🖥️ ⬅ ⬇️) */
+#hasta-ozet .ust-butons .btn-group.view-actions button {
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+
+    background: #d0e7f9;   /* satırın rengi */
+    color: #000;
+    border:none;
+}
+#hasta-ozet .ust-butons .btn-group.view-actions button:hover {
+    background:#c0d7ea;
+}
+
+
+/* e-Nabız özel butonu */
+.enabiz-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.enabiz-btn:hover {
+    background-color: #45a049;
+}
+
+/* Hızlı aksiyon bar (2. satır ikonlar) */
+#hizli-aksiyon-bar {
+    background: #c8def0;
+/*    padding: 6px 10px;*/
+    padding: 2px 3px;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    border-bottom: 1px solid #b0c8d8;
+    position: sticky;
+    top: 48px; /* hasta-ozet yüksekliği kadar */
+    z-index: 5;
+justify-content: flex-end; 
+}
+
+/* 2. satır ikon butonlar */
+.icon-btn2 {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    padding: 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+
+    background: #c8def0;   /* satır rengi */
+    color: #000;
+    border: none;          /* ← kenarlık yok */
+}
+
+.icon-btn2:hover {
+    background: #bcd3e6;
+}
+
+#hasta-ozet .icon-btn,
+#hizli-aksiyon-bar .icon-btn2 {
+    background: inherit !important;
+    color: #000 !important;
+    border: none !important;
+}
+
+
+/* Laboratuvar sol panel sınırlaması: 6 satır */
+.kutu[data-turu="laboratuvar"] table tbody {
+    display: block;
+    max-height: calc(6 * 28px); 
+    overflow-y: auto;
+}
+.kutu[data-turu="laboratuvar"] table thead,
+.kutu[data-turu="laboratuvar"] table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* Kenarlardan açılan gizli menüler */
+.edge-menu {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;              /* kapalıyken genişlik */
+    max-height: 70vh;
+    background: rgba(208, 231, 249, 0.85);
+    border: 1px solid #90a4b8;
+    box-sizing: border-box;
+    display: flex;
+    align-items: stretch;
+    transition: width 0.25s ease, box-shadow 0.25s ease;
+    z-index: 1200;
+    overflow: hidden;
+    font-size: 13px;
+}
+
+.edge-menu.left {
+    left: 0;
+    border-radius: 0 10px 10px 0;
+}
+
+.edge-menu.right {
+    right: 0;
+    border-radius: 10px 0 0 10px;
+}
+
+/* Üzerine gelince açılma */
+.edge-menu:hover {
+    width: 230px;             /* açıkken genişlik */
+    box-shadow: 2px 0 8px rgba(0,0,0,0.25);
+}
+
+/* Dikey sekme */
+.edge-menu-tab {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding: 3px 2px;             /* yarıya indirildi */
+    background: #0b3c61 !important;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    font-size: 11px;              /* biraz daha küçük yazı */
+    border-radius: 0 6px 6px 0;   /* daha ince görünüm */
+}
+
+/* İçerik alanı */
+.edge-menu-content {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* İçerideki buton/link stili */
+.edge-menu-content button {
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 12px;
+}
+.edge-menu-content button:hover {
+    background: #45a049;
+}
+
+/* Gizli menü arka planı koyu mavi */
+.edge-menu {
+    background: #0b3c61 !important;
+    border-color: #062940 !important;
+}
+
+/* Açıldığında içerik */
+.edge-menu-content button {
+    background: #0b3c61 !important;
+}
+.edge-menu-content button:hover {
+    background: #0d4a78 !important;
+}
+
+/* Dikey sekme */
+.edge-menu-tab {
+    background: #0b3c61 !important;
+}
+
+#sag-icerik-icerik {
+    margin-top: 12px;     /* istediğin boşluğu buradan ayarlıyorsun */
+}
+
+
+/* Tablet uyumu */
+@media (max-width: 1024px) {
+    body {
+        font-size: 14px;
+    }
+
+    .sol-panel {
+        width: 30%;
+    }
+
+    .sag-icerik {
+        width: 70%;
+        padding: 12px;
+    }
+
+    #hasta-ozet span {
+        font-size: 14px;
+    }
+
+    #hasta-ozet .ust-butons {
+        gap: 6px;
+    }
+}
+
+/* Mobil uyumu */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .sol-panel,
+    .sag-icerik {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Sol panel üstte, liste gibi; çok uzamasın */
+    .sol-panel {
+        max-height: 45vh;
+    }
+
+    /* Sağ panel altta, detay alanı */
+    .sag-icerik {
+        max-height: 55vh;
+        padding: 10px;
+    }
+
+    /* Üst hasta barı ve alt hızlı aksiyon barı tam genişlik çalışsın */
+    #hasta-ozet {
+        position: sticky;
+        top: 0;
+    }
+
+    #hizli-aksiyon-bar {
+        position: sticky;
+        top: auto;     /* üst barın altında doğal konumda */
+    }
+
+    /* Üst butonlar sıkışınca alt satıra geçebilsin */
+    #hasta-ozet .ust-butons {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    #hasta-ozet .btn-group.view-actions {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+    }
+
+    /* Kenar gizli menüler mobilde kapalı olsun (hover olmadığı için) */
+    .edge-menu {
+        display: none;
+    }
+}
+
+/* Tüm yeşil butonlar artık koyu mavi */
+button {
+    background-color: #0b3c61 !important;
+    color: #ffffff !important;
+}
+button:hover {
+    background-color: #0d4a78 !important;
+}
+
+</style>
+</head>
+<body>
+
+<div class="sol-panel" id="solPanel">
+
+    <!-- HASTA BİLGİSİ -->
+    <div class="kutu" data-turu="hasta-bilgisi" data-keywords="hasta,kimlik,ad,soyad,cinsiyet,yaş,tel">
+        <div class="kutu-baslik">Hasta Bilgisi</div>
+        <span class="ac-icon">🔍</span>
+
+        <div class="hasta-kutu">
+            <img src="https://picsum.photos/100?random=1" alt="Hasta Resmi">
+            <div class="hasta-bilgiler">
+                <p><strong>Ad:</strong> Ahmet</p>
+                <p><strong>Soyad:</strong> Yılmaz</p>
+                <p><strong>Cinsiyet:</strong> Erkek</p>
+                <p><strong>Yaş:</strong> 35</p>
+                <p><strong>Tel:</strong> 0555 123 45 67</p>
+            </div>
+        </div>
+
+        <div class="hasta-ayirici"></div>
+
+        <div class="hasta-ek-bilgiler">
+            <p><strong>T.C. No:</strong> 12345678901</p>
+            <p><strong>Dosya No:</strong> 2025-001234</p>
+            <p><strong>Protokol No:</strong> 785421</p>
+            <p><strong>Kurum / Güvence:</strong> SGK (Emekli)</p>
+            <p><strong>Poliklinik:</strong> Fizik Tedavi ve Rehabilitasyon</p>
+            <p><strong>Takip Eden Hekim:</strong> Uzm. Dr. Ayşe Demir</p>
+            <p><strong>Son Geliş:</strong> 25.11.2025 – 10:30</p>
+            <p><strong>Başvuru Nedeni:</strong> Bel ve bacak ağrısı</p>
+            <p><strong>Kronik Hastalıklar:</strong> Hipertansiyon, Tip 2 DM, Astım</p>
+            <p><strong>İlaç Özet:</strong> Amlodipin, Metformin, Inhaler bronkodilatör</p>
+            <p><strong>Alerjiler:</strong> Penisilin, Fındık</p>
+            <p><strong>Özel Durumlar:</strong> Tek böbrekli, BMI 32</p>
+            <p class="hasta-uyari">⚠ Antikoagülan kullanıyor (Warfarin) – Girişimlerde dikkat!</p>
+        </div>
+    </div>
+
+    <!-- MUAYENE BİLGİLERİ -->
+    <div class="kutu" data-turu="muayene" data-keywords="muayene,şikayet,öykü,anamnez,tedavi">
+        <div class="kutu-baslik">Muayene Bilgileri</div>
+        <span class="ac-icon">🔍</span>
+        <table>
+            <tbody>
+                <tr><td>Muayenesi</td><td class="muayene-ozet">Ayakta genel durum iyi, nabız 78, solunum normal, gözler canlı ve refleksler düzenli...</td></tr>
+                <tr><td>Şikayeti</td><td class="muayene-ozet">Sırt ağrısı, baş dönmesi, ara sıra yorgunluk ve halsizlik belirtileri mevcut...</td></tr>
+                <tr><td>Öyküsü</td><td class="muayene-ozet">7 ay önce başlayan ağrı, ilerleyen haftalarda hafifledi ancak bazen uzun süre oturunca tekrar artıyor...</td></tr>
+                <tr><td>Tedavisi</td><td class="muayene-ozet">Fizik tedavi, egzersiz programı ve ağrı kesici düzenli olarak uygulanmakta...</td></tr>
+                <tr><td>Anamnezi</td><td class="muayene-ozet">Hipertansiyon ve hafif astım öyküsü mevcut, ailede diyabet ve kalp hastalığı geçmişi...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TEŞHİS KODLARI -->
+    <div class="kutu" data-turu="teshis" data-keywords="teşhis,icd10,kod">
+        <div class="kutu-baslik">Teşhis Kodları</div>
+        <span class="ac-icon">🔍</span>
+        <table>
+            <tbody>
+                <tr><td>ICD10: M54.5</td><td>Bel ağrısı</td></tr>
+                <tr><td>ICD10: I10</td><td>Hipertansiyon</td></tr>
+                <tr><td>ICD10: E11</td><td>Tip 2 Diyabet</td></tr>
+                <tr><td>ICD10: J45</td><td>Astım</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- LAB -->
+    <div class="kutu" data-turu="laboratuvar" data-keywords="laboratuvar,test,sonuç">
+        <div class="kutu-baslik">Laboratuvar Sonuçları</div>
+        <span class="ac-icon">🔍</span>
+        <table>
+            <thead>
+                <tr><th>Test</th><th>Sonuç</th><th>Tarih</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Hemoglobin</td><td>14 g/dL</td><td>2025-11-01</td></tr>
+                <tr><td>WBC</td><td>6.5 x10^3/µL</td><td>2025-11-01</td></tr>
+                <tr><td>Glukoz</td><td>95 mg/dL</td><td>2025-11-01</td></tr>
+                <tr><td>Üre</td><td>30 mg/dL</td><td>2025-11-01</td></tr>
+                <tr><td>Creatinin</td><td>0.9 mg/dL</td><td>2025-11-01</td></tr>
+                <tr><td>Kolesterol</td><td>180 mg/dL</td><td>2025-11-01</td></tr>
+                <tr><td>Trigliserid</td><td>150 mg/dL</td><td>2025-11-01</td></tr>
+                <tr><td>HDL</td><td>55 mg/dL</td><td>2025-11-01</td></tr>
+                <tr><td>LDL</td><td>100 mg/dL</td><td>2025-11-01</td></tr>
+                <tr><td>CRP</td><td>5 mg/L</td><td>2025-11-01</td></tr>
+                <tr><td>TSH</td><td>2 µIU/mL</td><td>2025-11-01</td></tr>
+                <tr><td>FT4</td><td>1.1 ng/dL</td><td>2025-11-01</td></tr>
+                <tr><td>Vitamin D</td><td>30 ng/mL</td><td>2025-11-01</td></tr>
+                <tr><td>Vitamin B12</td><td>500 pg/mL</td><td>2025-11-01</td></tr>
+                <tr><td>Ferritin</td><td>100 ng/mL</td><td>2025-11-01</td></tr>
+                <tr><td>ALT</td><td>25 U/L</td><td>2025-11-01</td></tr>
+                <tr><td>AST</td><td>22 U/L</td><td>2025-11-01</td></tr>
+                <tr><td>ALP</td><td>80 U/L</td><td>2025-11-01</td></tr>
+                <tr><td>GGT</td><td>30 U/L</td><td>2025-11-01</td></tr>
+                <tr><td>LDH</td><td>180 U/L</td><td>2025-11-01</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- RADYOLOJİ -->
+    <div class="kutu" data-turu="radyoloji" data-keywords="radyoloji,çekim,rapor,görüntü">
+        <div class="kutu-baslik">Radyolojik Tetkikler</div>
+        <span class="ac-icon">🔍</span>
+        <table>
+            <thead>
+                <tr><th>Hizmet</th><th>Tarih</th><th>Rapor</th><th>Görüntü</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>BT Beyin</td>
+                    <td>2025-11-01</td>
+                    <td>Normal</td>
+                    <td><img class="kucuk-resim" src="https://picsum.photos/50?random=2"></td>
+                </tr>
+                <tr>
+                    <td>MR Omurga</td>
+                    <td>2025-11-02</td>
+                    <td>Hafif disk hernisi</td>
+                    <td><img class="kucuk-resim" src="https://picsum.photos/50?random=3"></td>
+                </tr>
+                <tr>
+                    <td>US Karaciğer</td>
+                    <td>2025-11-03</td>
+                    <td>Normal</td>
+                    <td><img class="kucuk-resim" src="https://picsum.photos/50?random=4"></td>
+                </tr>
+                <tr>
+                    <td>Röntgen Akciğer</td>
+                    <td>2025-11-04</td>
+                    <td>Normal</td>
+                    <td><img class="kucuk-resim" src="https://picsum.photos/50?random=5"></td>
+                </tr>
+                <tr>
+                    <td>BT Akciğer</td>
+                    <td>2025-11-05</td>
+                    <td>Minimal opasite</td>
+                    <td><img class="kucuk-resim" src="https://picsum.photos/50?random=6"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ALERJİLER -->
+    <div class="kutu" data-turu="alerji" data-keywords="alerji,reaksiyon">
+        <div class="kutu-baslik">Alerjiler</div>
+        <span class="ac-icon">🔍</span>
+        <ul>
+            <li>Penisilin</li>
+            <li>Polen</li>
+            <li>Fındık</li>
+        </ul>
+    </div>
+
+    <!-- İLAÇLAR -->
+    <div class="kutu" data-turu="ilaclar" data-keywords="ilaç,tedavi">
+        <div class="kutu-baslik">Kullanılan İlaçlar</div>
+        <span class="ac-icon">🔍</span>
+        <ul>
+            <li>Parol 500mg günde 2</li>
+            <li>Ventolin inhaler</li>
+            <li>Aspirin 100mg</li>
+        </ul>
+    </div>
+
+    <!-- AMELİYATLAR -->
+    <div class="kutu" data-turu="ameliyat" data-keywords="ameliyat,cerrahi">
+        <div class="kutu-baslik">Geçirdiği Ameliyatlar</div>
+        <span class="ac-icon">🔍</span>
+        <ul>
+            <li>Apandisit ameliyatı 2010</li>
+            <li>Menisküs onarımı 2015</li>
+        </ul>
+    </div>
+
+    <!-- KRONİK -->
+    <div class="kutu" data-turu="kronik" data-keywords="kronik,hastalık">
+        <div class="kutu-baslik">Kronik Hastalıklar</div>
+        <span class="ac-icon">🔍</span>
+        <ul>
+            <li>Hipertansiyon</li>
+            <li>Tip 2 Diyabet</li>
+            <li>Astım</li>
+        </ul>
+    </div>
+
+    <!-- AİLE GENETİK -->
+    <div class="kutu" data-turu="aile-genetik" data-keywords="aile,genetik,hastalık">
+        <div class="kutu-baslik">Aile Genetiği</div>
+        <span class="ac-icon">🔍</span>
+        <ul>
+            <li>Anne: Hipertansiyon</li>
+            <li>Baba: Diyabet</li>
+            <li>Kardeş: Astım</li>
+        </ul>
+    </div>
+
+</div> <!-- sol panel bitişi -->
+
+<div class="sag-icerik" id="sagPanel">
+
+    <!-- Sağ üstte HASTA ÖZET satırı -->
+    <div id="hasta-ozet">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <img src="https://picsum.photos/40?random=1" alt="Hasta">
+            <span>Ahmet Yılmaz - 35 / Erkek</span>
+        </div>
+
+        <div class="ust-butons">
+
+            <!-- Grup 1: İlaç yönetimi, e-Nabız, SGK, SİNA -->
+            <div class="btn-group">
+                <button>💊 İlaç Yönetimi</button>
+
+                <!-- e-Nabız butonu (sadece ikon) -->
+                <button class="enabiz-btn" title="e-Nabız">
+                    <img src="/mnt/data/31245ef3-af3d-4363-b1e3-36a96eee541b.png"
+                        alt="e-Nabız"
+                        style="height:18px; width:auto; display:block;">
+                </button>
+
+                <button>🧾 SGK</button>
+                <button>🩺 SİNA</button>
+            </div>
+
+            <!-- Grup 2: Mikrofon, Fullscreen, Sol Panel -->
+            <div class="btn-group view-actions">
+                <button class="icon-btn" id="mikrofonToggleBtn" title="Mikrofon Başlat/Durdur">🎤</button>
+                <button class="icon-btn" id="fullscreenToggleBtn" title="Tüm Ekran">🖥️</button>
+                <button class="icon-btn" id="leftPanelToggleBtn" title="Sol Paneli Göster/Gizle">⬅</button>
+		<button class="icon-btn" id="hizliBarToggleBtn" title="Hızlı Aksiyon Barını Aç/Kapat">⬇️</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 2. satır: Hızlı aksiyon bar -->
+    <div id="hizli-aksiyon-bar">
+        <button class="icon-btn2" title="Barkod / Karekod Okut">📷</button>
+        <button class="icon-btn2" title="İlaç Reçetesi">💊</button>
+        <button class="icon-btn2" title="Hasta Notu Ekle">📝</button>
+        <button class="icon-btn2" title="Rapor Oluştur">📄</button>
+        <button class="icon-btn2" title="Laboratuvar İstem">🧪</button>
+        <button class="icon-btn2" title="Radyoloji İstem">🩻</button>
+        <button class="icon-btn2" title="e-Nabız Klinik Bilgi">🌐</button>
+        <button class="icon-btn2" title="Risk/Uyarı">⚠️</button>
+        <button class="icon-btn2" title="Acil Durum">🚨</button>
+        <button class="icon-btn2" title="Takvim / Randevu">📅</button>
+    </div>
+
+    <!-- Sağ panel içerik alanı -->
+    <div id="sag-icerik-icerik">
+        <h2>İçerik Alanı</h2>
+        <p>Sol paneldeki kutulardan birine tıkladığınızda detaylar burada görüntülenecek.</p>
+    </div>
+
+<!-- SOL GİZLİ MENÜ -->
+<div class="edge-menu left">
+    <div class="edge-menu-tab">Kısayollar</div>
+    <div class="edge-menu-content">
+        <button title="Bugünkü hastalar">👥 Bugünkü Hastalar</button>
+        <button title="Sık kullanılan tanılar">📚 Sık Tanılar</button>
+        <button title="Sık kullanılan ilaç kombinasyonları">💊 Sık Reçeteler</button>
+        <button title="Son baktığım hasta">⏱ Son Hasta</button>
+        <button title="Kişisel notlar / hatırlatmalar">📝 Notlarım</button>
+    </div>
+</div>
+
+<!-- SAĞ GİZLİ MENÜ -->
+<div class="edge-menu right">
+    <div class="edge-menu-tab">Araçlar</div>
+    <div class="edge-menu-content">
+        <button title="Randevu planlayıcı">📅 Randevu Planlayıcı</button>
+        <button title="İstatistiklerim / Performans">📊 İstatistikler</button>
+        <button title="Şablon raporlar">📄 Rapor Şablonları</button>
+        <button title="Hızlı mesaj / konsültasyon isteği">✉️ Konsültasyon</button>
+        <button title="Ayarlar">⚙️ Ayarlar</button>
+    </div>
+</div>
+
+
+<script>
+
+// ---- DOM referansları ve durum değişkenleri ----
+const solPanel   = document.getElementById('solPanel');
+const sagPanel   = document.getElementById('sagPanel');
+const hastaOzet  = document.getElementById('hasta-ozet');
+const sagIcerik  = document.getElementById('sag-icerik-icerik');
+const hizliBar   = document.getElementById('hizli-aksiyon-bar');
+
+const fullscreenBtn = document.getElementById('fullscreenToggleBtn');
+const leftPanelBtn  = document.getElementById('leftPanelToggleBtn');
+const micBtn        = document.getElementById('mikrofonToggleBtn');
+
+let solFull   = false;  // sol panel fullscreen modda mı
+let solHidden = false;  // sol panel tamamen gizli mi
+
+// ---- Sağ panelde kart açma fonksiyonu ----
+function openCardInRightPanel(kutu) {
+    // Fullscreen'deysek önce normal görünüme dön
+    if (solFull) {
+        exitFullscreen();
+    }
+
+    if (!sagIcerik) return;
+
+    sagIcerik.innerHTML = '';
+    const clone = kutu.cloneNode(true);
+    const cloneIcon = clone.querySelector('.ac-icon');
+    if (cloneIcon) cloneIcon.remove();
+
+    clone.style.width = '100%';
+    clone.style.height = 'auto';
+    clone.style.overflow = 'visible';
+
+    clone.querySelectorAll('.muayene-ozet').forEach(td => {
+        td.style.display = 'block';
+        td.style.webkitLineClamp = 'unset';
+    });
+
+    const labTbody = clone.querySelector('table tbody');
+    if (labTbody && kutu.dataset.turu === 'laboratuvar') {
+        labTbody.style.maxHeight = 'none';
+        labTbody.style.overflowY = 'visible';
+    }
+
+    sagIcerik.appendChild(clone);
+}
+
+// ---- Fullscreen moduna gir / çık ----
+function enterFullscreen() {
+    if (!solPanel || !sagPanel) return;
+
+    // Sol panel gizliyse önce geri getir
+    if (solHidden) {
+        solPanel.style.display = 'flex';
+        sagPanel.style.width = '75%';
+        solHidden = false;
+        if (leftPanelBtn) {
+            leftPanelBtn.textContent = '⬅';
+            leftPanelBtn.title = 'Sol Paneli Göster/Gizle';
+        }
+    }
+
+    solPanel.classList.add('fullscreen-grid');
+    solPanel.style.width = '100%';
+
+    // Sağ panel içeriğini gizle
+    sagPanel.style.width = '0';
+    sagPanel.style.padding = '0';
+    sagPanel.style.overflow = 'hidden';
+    if (sagIcerik) sagIcerik.style.display = 'none';
+
+    // Üst bar sabit kalsın
+    if (hastaOzet) {
+        hastaOzet.style.position = 'fixed';
+        hastaOzet.style.top = '0';
+        hastaOzet.style.left = '0';
+        hastaOzet.style.right = '0';
+        hastaOzet.style.zIndex = '999';
+    }
+
+    // Hızlı aksiyon bar da sabit kalsın
+    let headerHeight = hastaOzet ? hastaOzet.offsetHeight : 0;
+    let barHeight    = hizliBar ? hizliBar.offsetHeight : 0;
+
+    if (hizliBar) {
+        hizliBar.style.position = 'fixed';
+        hizliBar.style.top = headerHeight + 'px';
+        hizliBar.style.left = '0';
+        hizliBar.style.right = '0';
+        hizliBar.style.zIndex = '998';
+    }
+
+    solPanel.style.marginTop = (headerHeight + barHeight) + 'px';
+
+    if (fullscreenBtn) fullscreenBtn.title = 'Normal görünüme dön';
+    solFull = true;
+
+document.documentElement.requestFullscreen();
+document.getElementById("fsModal").style.display = "none";
+
+}
+
+function exitFullscreen() {
+    if (!solPanel || !sagPanel) return;
+
+    solPanel.classList.remove('fullscreen-grid');
+    solPanel.style.width = '25%';
+    solPanel.style.marginTop = '0';
+
+    sagPanel.style.width = '75%';
+    sagPanel.style.padding = '0';//'20px';
+    sagPanel.style.overflow = 'auto';
+    if (sagIcerik) sagIcerik.style.display = 'block';
+
+    if (hastaOzet) {
+        hastaOzet.style.position = 'sticky';
+        hastaOzet.style.top = '0';
+        hastaOzet.style.left = '';
+        hastaOzet.style.right = '';
+        hastaOzet.style.zIndex = '5';
+    }
+
+    if (hizliBar) {
+        hizliBar.style.position = 'sticky';
+        hizliBar.style.top = '48px'; // CSS'teki değerle uyumlu
+        hizliBar.style.left = '';
+        hizliBar.style.right = '';
+        hizliBar.style.zIndex = '5';
+    }
+
+    if (fullscreenBtn) fullscreenBtn.title = 'Tüm Ekran';
+    solFull = false;
+}
+
+// ---- Fullscreen butonu ----
+if (fullscreenBtn) {
+
+    fullscreenBtn.addEventListener('click', () => {
+        if (!solFull) {
+            enterFullscreen();
+        } else {
+            exitFullscreen();
+        }
+    });
+
+
+}
+
+// ---- Sol panel gizle/göster butonu ----
+if (leftPanelBtn && solPanel && sagPanel) {
+    leftPanelBtn.addEventListener('click', () => {
+        // Fullscreen'deysek önce çık
+        if (solFull) {
+            exitFullscreen();
+        }
+
+        if (!solHidden) {
+            solPanel.style.display = 'none';
+            sagPanel.style.width = '100%';
+            leftPanelBtn.textContent = '➡';
+            leftPanelBtn.title = 'Sol paneli göster';
+            solHidden = true;
+        } else {
+            solPanel.style.display = 'flex';
+            sagPanel.style.width = '75%';
+            leftPanelBtn.textContent = '⬅';
+            leftPanelBtn.title = 'Sol paneli gizle';
+            solHidden = false;
+        }
+    });
+}
+
+// ---- Kartlara tıklama / dblclick ile sağ panelde açma ----
+document.querySelectorAll('.kutu').forEach(kutu => {
+    const icon = kutu.querySelector('.ac-icon');
+    const handler = () => openCardInRightPanel(kutu);
+
+    kutu.addEventListener('dblclick', handler);
+    if (icon) icon.addEventListener('click', handler);
+});
+
+// ---- SES TANIMA (mikrofon) ----
+let recognition = null;
+let micActive   = false;
+
+window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (window.SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'tr-TR';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onresult = function(event) {
+        const lastResult = event.results[event.results.length - 1];
+        const command = lastResult[0].transcript.toLowerCase().trim();
+        const scrollAmount = solPanel ? solPanel.clientHeight : 0;
+
+        if (solPanel && (command.includes("aşağı") || command.includes("aşşağı") || command.includes("down"))) {
+            solPanel.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+        } else if (solPanel && (command.includes("yukarı") || command.includes("up"))) {
+            solPanel.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+        } else {
+            document.querySelectorAll('.kutu').forEach(kutu => {
+                const keywords = (kutu.dataset.keywords || '').split(',');
+                for (const k of keywords) {
+                    const key = k.trim();
+                    if (key && command.includes(key)) {
+                        const icon = kutu.querySelector('.ac-icon');
+                        if (icon) {
+                            icon.click();
+                        } else {
+                            openCardInRightPanel(kutu);
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+    };
+
+    recognition.onerror = function(event) {
+        console.log('Ses tanıma hatası:', event.error);
+        if (event.error === 'not-allowed' || event.error === 'denied') {
+            micActive = false;
+            if (micBtn) {
+                micBtn.textContent = '🎤';
+                micBtn.title = 'Mikrofon Başlat/Durdur';
+            }
+            alert("Mikrofon izni verilmediği için sesli komut kapatıldı.");
+        }
+    };
+
+    recognition.onend = function() {
+        micActive = false;
+        if (micBtn) {
+            micBtn.textContent = '🎤';
+            micBtn.title = 'Mikrofon Başlat/Durdur';
+        }
+    };
+} else {
+    console.log('Tarayıcınız Web Speech API desteklemiyor.');
+}
+
+// ---- Mikrofon başlat/durdur butonu ----
+if (micBtn) {
+    micBtn.addEventListener('click', () => {
+        if (!recognition) {
+            alert("Tarayıcınız ses tanımayı desteklemiyor.");
+            return;
+        }
+        if (!micActive) {
+            recognition.start();
+            micActive = true;
+            micBtn.textContent = '⏹';
+            micBtn.title = 'Mikrofonu durdur';
+        } else {
+            recognition.stop();
+        }
+    });
+}
+
+const hizliBarToggleBtn = document.getElementById('hizliBarToggleBtn');
+let hizliBarHidden = false;
+
+if (hizliBarToggleBtn && hizliBar) {
+    hizliBarToggleBtn.addEventListener('click', () => {
+
+        if (!hizliBarHidden) {
+            // Kapat
+            hizliBar.style.display = 'none';
+            hizliBarToggleBtn.textContent = '⬆️';
+            hizliBarHidden = true;
+
+            // Fullscreen'deyse margin ayarını düzelt
+            if (solFull) {
+                solPanel.style.marginTop = hastaOzet.offsetHeight + 'px';
+            }
+
+        } else {
+            // Aç
+            hizliBar.style.display = 'flex';
+            hizliBarToggleBtn.textContent = '⬇️';
+            hizliBarHidden = false;
+
+            // Fullscreen'deyse margin ayarını düzelt
+            if (solFull) {
+                solPanel.style.marginTop =
+                    (hastaOzet.offsetHeight + hizliBar.offsetHeight) + 'px';
+            }
+        }
+    });
+}
+
+</script>
+
+</body>
+</html>
