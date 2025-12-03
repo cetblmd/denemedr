@@ -1095,7 +1095,6 @@ function handleVoiceCommand(cmd) {
 }    // Buraya ileride yeni komutlar ekleyebiliriz.
 
 function startRecognition() {
-alert('BAKACAZ.');
 
     if (!speechSupported) {
         alert('Tarayıcınız sesli komut (SpeechRecognition) özelliğini desteklemiyor.');
@@ -1109,10 +1108,6 @@ alert('BAKACAZ.');
         recognition.continuous = true;
         recognition.interimResults = false;
 
-recognition.onstart = function () {
-        alert('onstart: Gerçekte dinlemeye başladı.');
-};
-alert('onstart: Gerçekte dinlemeye başladı.2222222');
 
         recognition.onresult = (event) => {
             const lastResult = event.results[event.results.length - 1];
@@ -1121,7 +1116,6 @@ alert('onstart: Gerçekte dinlemeye başladı.2222222');
             console.log('Sesli komut:', transcript);
             showVoiceCommand(transcript);
             handleVoiceCommand(transcript);
-alert('onresult: ' + transcript);
         };
 
         recognition.onerror = (event) => {
@@ -1149,11 +1143,8 @@ alert('onresult: ' + transcript);
     try {
         recognition.start();
         showVoiceCommand('Dinleniyor...');
-alert('Dinleniyor.');
-
     } catch (e) {
         console.error('Recognition start hatası:', e);
-alert('Dinleniyor OLMADI.');
     }
 }
 
