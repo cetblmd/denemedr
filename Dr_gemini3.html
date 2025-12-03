@@ -269,6 +269,13 @@ th {
     border: none !important;
 }
 
+#hasta-ozet .icon-btn.mic-on {
+    background: #2ecc71 !important;   /* yeşil */
+    color: #fff !important;
+    border: 1px solid #27ae60 !important;
+}
+
+
 /* Mobil menü ikonu */
 #mobileMenuToggle { display:none; }
 
@@ -1018,6 +1025,7 @@ const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
 let solHidden = false;
 let micActive = false;
 let dashboardMode = false;
+let initialViewApplied = false;
 let fullscreenRequestedByButton = false;
 
 let defaultSagIcerikHTML = sagIcerik ? sagIcerik.innerHTML : '';
@@ -1124,6 +1132,31 @@ function startRecognition() {
         recognition.continuous = true;
         recognition.interimResults = false;
 
+/*CETCET*/
+recognition.onstart = function () {
+        micBtn.style.backgroundColor = '#2ecc71';  // yeşil
+        micBtn.style.color = '#fff';
+        micBtn.style.border = '1px solid #27ae60';
+    };
+
+recognition.onend = function () {
+
+            // Eğer micActive hâlâ true ise → otomatik yeniden başlat
+            if (micActive) {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error(e);
+                }
+            } else {
+                // Kullanıcı mikrofonu kapattıysa → eski görünüme dön
+                micBtn.style.backgroundColor = 'inherit';
+                micBtn.style.color = '#000';
+                micBtn.style.border = 'none';
+                micBtn.title = 'Mikrofonu Başlat';
+            }
+        };
+/*CETCET*/
 
         recognition.onresult = (event) => {
             const lastResult = event.results[event.results.length - 1];
@@ -1144,6 +1177,7 @@ function startRecognition() {
             showVoiceCommand('Hata: ' + event.error);
         };
 
+/*	
         recognition.onend = () => {
             // Mikrofon açık görünüyorsa tekrar başlat
             if (micActive) {
@@ -1154,6 +1188,7 @@ function startRecognition() {
                 }
             }
         };
+*/
     }
 
     try {
@@ -1512,6 +1547,24 @@ function handleResizeAndLoad() {
     }
     updateFixedHeaderPosition();
     setPanelOffsets();
+
+    if (!initialViewApplied) {
+        if (!window.matchMedia("(max-width: 768px)").matches) {
+            // Masaüstü: sağ panelde hasta bilgisi detay açılsın
+            const hastaCard = solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]');
+            if (hastaCard) {
+                openCardInRightPanel(hastaCard);
+            }
+        } else {
+            // Mobil: sol panelde hasta bilgisi kutusu açık gelsin
+            const hastaCardMobile = solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]');
+            if (hastaCardMobile) {
+                hastaCardMobile.classList.add('active');
+            }
+        }
+        initialViewApplied = true;
+    }
+
 }
 
 function toggleHizliBar() {
@@ -1531,21 +1584,24 @@ function toggleHizliBar() {
 
 function toggleMic() {
     micActive = !micActive;
+
     if (micActive) {
-        micBtn.style.backgroundColor = '#ff5252';
-        micBtn.style.color = '#fff';
-        micBtn.title = 'Mikrofonu Durdur';
+	micBtn.classList.add('mic-on');
+        micBtn.title = 'Mikrofon açık';
+        startRecognition();
     } else {
-        micBtn.style.backgroundColor = 'inherit';
-        micBtn.style.color = '#000';
-        micBtn.title = 'Mikrofonu Başlat';
+	micBtn.classList.remove('mic-on');
+        micBtn.title = 'Mikrofon kapalı';
+        stopRecognition();
     }
 }
 
+/*
 function toggleMic() {
     micActive = !micActive;
 
     if (micActive) {
+
         micBtn.style.backgroundColor = '#ff5252';
         micBtn.style.color = '#fff';
         micBtn.title = 'Mikrofonu Durdur';
@@ -1557,7 +1613,7 @@ function toggleMic() {
         stopRecognition();
     }
 }
-
+*/
 
 function openMobileMenu() {
     if (!mobileMenuModal) return;
@@ -1612,6 +1668,8 @@ document.getElementById('hizliBarToggleBtn')?.addEventListener('click', toggleHi
 document.addEventListener('fullscreenchange', handleFullscreenChange);
 window.addEventListener('load', handleResizeAndLoad);
 window.addEventListener('resize', handleResizeAndLoad);
+
+
 </script>
 
 
