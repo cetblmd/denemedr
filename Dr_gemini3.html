@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<link href="https://fonts.cdnfonts.com/css/aptos" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hasta Paneli - Sesli Komutlu (Responsive)</title>
+<style>
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    font-family: 'Aptos', sans-serif;
+}
+.main-content-wrapper {
+    display: flex;
+    height: 100vh;
+    margin-top: 0;
+    overflow: hidden;
+}
+/* Sol panel */
+.sol-panel {
+    width: 25%;
+    background-color: #d0e7f9;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: 0.3s;
+    flex-shrink: 0;
+}
+
+/* Sağ panel */
+.sag-icerik {
+    width: 75%;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #f5f5f5;
+    overflow-y: auto;
+    transition: 0.3s;
+}
+
+/* Dashboard grid (sağ panelde) */
+.dashboard-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    align-content: flex-start;
+    padding: 8px;
+}
+.dashboard-grid .kutu {
+    width: 360px;
+}
+
+/* Kartlar */
+.kutu {
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    cursor: pointer;
+}
+.kutu-baslik {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer; 
+}
+.kutu .ac-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+/* Hasta kutusu */
+.hasta-kutu {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.hasta-kutu img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #0b3c61;
+}
+.hasta-bilgiler {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 14px;
+}
+.hasta-bilgiler p {
+    margin: 1px 0;
+}
+.hasta-ayirici {
+    border-bottom: 1px solid #ccc;
+    margin: 10px 0;
+}
+.hasta-ek-bilgiler p {
+    margin: 3px 0;
+    font-size: 13px;
+}
+.hasta-uyari {
+    color: #b71c1c;
+    font-weight: bold;
+    margin-top: 6px;
+}
+
+/* Tablo */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+th, td {
+    text-align: left;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+th {
+    background-color: #0b3c61;
+    color: white;
+}
+.kucuk-resim {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+
+/* Muayene özet */
+.muayene-ozet {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Üst bar 1 */
+#hasta-ozet {
+    background:#d0e7f9;
+    color:black;
+    padding:8px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    position: fixed;
+    top:0;
+    right:0;
+    z-index:9999;
+    font-size:16px;
+    justify-content: space-between;
+}
+#hasta-ozet img {
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid white;
+}
+#hasta-ozet .ust-butons {
+    margin-left:auto;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap: nowrap;
+}
+.btn-group {
+    display:flex;
+    gap:5px;
+    align-items:center;
+}
+.btn-group.view-actions {
+    margin-left:16px;
+    padding-left:12px;
+    border-left:1px solid rgba(0,0,0,0.15);
+}
+#hasta-ozet .ust-butons button {
+    background-color: #0b3c61;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+#hasta-ozet .ust-butons button:hover {
+    background-color: #0d4a78;
+}
+#hasta-ozet .ust-butons .btn-group.view-actions button {
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    padding:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    background: #d0e7f9;
+    color: #000;
+    border:none;
+}
+#hasta-ozet .ust-butons .btn-group.view-actions button:hover {
+    background:#c0d7ea;
+}
+.enabiz-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0b3c61;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.enabiz-btn:hover {
+    background-color: #0d4a78;
+}
+
+/* Üst bar 2 */
+#hizli-aksiyon-bar {
+    background: #c8def0;
+    padding: 2px 3px;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    border-bottom: 1px solid #b0c8d8;
+    position: fixed;
+    top: 48px;
+    right: 0;
+    z-index: 9998;
+    justify-content: flex-end; 
+}
+.icon-btn2 {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    padding: 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+    background: #c8def0;
+    color: #000;
+    border: none;
+}
+.icon-btn2:hover {
+    background: #bcd3e6;
+}
+#hasta-ozet .icon-btn,
+#hizli-aksiyon-bar .icon-btn2 {
+    background: inherit !important;
+    color: #000 !important;
+    border: none !important;
+}
+
+/* Mobil menü ikonu */
+#mobileMenuToggle { display:none; }
+
+/* Lab */
+.kutu[data-turu="laboratuvar"] table tbody {
+    display: block;
+    max-height: calc(6 * 28px); 
+    overflow-y: auto;
+}
+.kutu[data-turu="laboratuvar"].active table tbody,
+.kutu[data-turu="laboratuvar"].full table tbody,
+.sag-icerik .kutu[data-turu="laboratuvar"] table tbody {
+    max-height: none; 
+    overflow-y: visible;
+    display: table-row-group;
+}
+.kutu[data-turu="laboratuvar"] table thead,
+.kutu[data-turu="laboratuvar"] table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* Kenar menüler */
+.edge-menu {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    max-height: 70vh;
+    background: rgba(208, 231, 249, 0.85);
+    border: 1px solid #90a4b8;
+    box-sizing: border-box;
+    display: flex;
+    align-items: stretch;
+    transition: width 0.25s ease, box-shadow 0.25s ease;
+    z-index: 1200;
+    overflow: hidden;
+    font-size: 13px;
+}
+.edge-menu.left {
+    left: 0;
+    border-radius: 0 10px 10px 0;
+}
+.edge-menu.right {
+    right: 0;
+    border-radius: 10px 0 0 10px;
+}
+.edge-menu:hover {
+    width: 230px;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.25);
+}
+.edge-menu-tab {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    padding: 3px 2px;
+    background: #0b3c61 !important;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 11px;
+    border-radius: 0 6px 6px 0;
+}
+.edge-menu-content {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    white-space: nowrap;
+}
+.edge-menu-content button {
+    background: #0b3c61 !important;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 12px;
+}
+.edge-menu-content button:hover {
+    background: #0d4a78 !important;
+}
+
+#sag-icerik-icerik {
+    margin-top: 12px;
+    padding: 10px;
+}
+
+/* Aşı tablosu responsive */
+.responsive-table-container {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+.responsive-header {
+    display: flex;
+    font-weight: bold;
+    background-color: #0b3c61;
+    color: white;
+    padding: 8px 0; 
+    font-size: 12px;
+    border-radius: 5px 5px 0 0;
+}
+.responsive-row {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    padding: 8px 0; 
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+.responsive-row:hover {
+    background-color: #f7f7f7;
+}
+.responsive-row:last-child {
+    border-bottom: none;
+}
+.responsive-row.uyari {
+    background-color: #ffe0b2;
+    font-weight: bold;
+    color: #e65100;
+}
+.responsive-header > div,
+.responsive-row > div {
+    overflow: visible; 
+    text-overflow: clip; 
+    white-space: normal; 
+    box-sizing: border-box;
+    padding: 0 5px; 
+}
+.col-adi { flex: 2.5 0 0; }
+.col-doz { flex: 1 0 0; text-align: center; }
+.col-tarih { flex: 1.5 0 0; }
+.col-sonraki { flex: 2 0 0; }
+.col-durum { flex: 1.5 0 0; text-align: right; }
+.responsive-row .label { display:none; }
+
+/* Mobil menü modal */
+.menu-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+}
+.menu-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; 
+    padding: 10px;
+    border: 1px solid #888;
+    width: 90%; 
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+.menu-header h3 {
+    margin: 0;
+    color: #0b3c61;
+}
+.menu-group {
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px solid #d0e7f9;
+    border-radius: 8px;
+}
+.menu-group h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: #0d4a78;
+    font-size: 14px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.menu-modal .menu-group button {
+    display: block;
+    width: 100%;
+    background-color: #0b3c61;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 5px;
+    text-align: left;
+}
+.menu-modal .menu-group button:hover {
+    background-color: #0d4a78;
+}
+.menu-modal .close-btn {
+    color: #aaa;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+.menu-modal .close-btn:hover,
+.menu-modal .close-btn:focus {
+    color: black;
+}
+
+
+#voice-command-box {
+    position: fixed;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(11, 60, 97, 0.9);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    z-index: 9999;
+    max-width: 320px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+#voice-command-box span {
+    font-weight: bold;
+}
+
+
+
+/* Tablet */
+@media (max-width: 1024px) {
+    body { font-size: 14px; }
+    .main-content-wrapper {
+        height: 100vh;
+        margin-top: 0;
+    }
+    .sol-panel { width: 35%; gap: 12px; }
+    .sag-icerik { width: 65%; }
+    .btn-group.view-actions {
+        margin-left: 8px; 
+        padding-left: 8px; 
+        border-left: 1px solid rgba(0,0,0,0.15); 
+    }
+    #hasta-ozet .ust-butons { gap:4px; }
+    #hasta-ozet .ust-butons button {
+        padding: 4px 6px;
+        font-size: 12px;
+    }
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+    body {
+        height: auto;
+        min-height: 100vh;
+        padding: 0;
+    }
+    .main-content-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+    .sol-panel,
+    .sag-icerik {
+        width: 100%;
+        height: auto;
+        min-height: auto; 
+    }
+    .sol-panel {
+        max-height: none; 
+        padding: 8px;
+        gap: 8px;
+    }
+    .sag-icerik {
+        display: none !important;
+    }
+    .kutu > *:not(.kutu-baslik):not(.ac-icon) {
+        display: none; 
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    }
+    .kutu.active > *:not(.kutu-baslik):not(.ac-icon) {
+        display: block; 
+        max-height: 2000px; 
+        padding-top: 8px;
+        transition: max-height 0.5s ease-in, padding 0.5s ease-in;
+    }
+    #hasta-ozet {
+        padding: 6px 8px;
+        font-size: 14px;
+    }
+    #hizli-aksiyon-bar {
+        top: 44px;
+        padding: 2px;
+    }
+    #hasta-ozet .ust-butons {
+        flex-wrap: wrap; 
+        justify-content: flex-end;
+    }
+    .btn-group.view-actions {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+    }
+    .icon-btn2 {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+    }
+    .edge-menu { display:none; }
+    #mobileMenuToggle { display:flex; }
+
+    .menu-modal {
+        display: none; 
+        padding: 0;
+        background-color: #f5f5f5;
+    }
+    .menu-modal-content {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        padding: 10px;
+        border: none;
+        border-radius: 0;
+    }
+
+    .responsive-header { display:none; }
+    .responsive-row {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+        gap: 2px;
+    }
+    .col-adi, .col-doz, .col-tarih, .col-sonraki, .col-durum {
+        flex: 100%;
+        width: 100%;
+        text-align: left !important;
+        font-size: 12px;
+    }
+    .responsive-row .label {
+        display: inline-block;
+        font-weight: bold;
+        color: #0b3c61;
+        margin-right: 5px;
+        min-width: 80px;
+    }
+
+    .detail-modal {
+        display: none;
+        position: fixed;
+        z-index: 10000; 
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #f5f5f5;
+        overflow-y: auto;
+    }
+    .detail-modal.active { display:block; }
+    .detail-modal-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background-color: #d0e7f9;
+        color: #0b3c61;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 10001; 
+    }
+    .detail-modal-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+        flex-grow: 1;
+        text-align: center;
+        padding-right: 30px;
+    }
+    .detail-modal-header .back-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #0b3c61;
+        padding: 0 5px;
+        line-height: 1;
+        position: relative;
+        left: 0;
+        z-index: 2;
+    }
+    .detail-modal-content {
+        margin-top: 50px; 
+        padding: 10px;
+        padding-bottom: 20px;
+    }
+    .detail-modal-content .kutu {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+    .detail-modal-content .kutu-baslik { display:none; }
+    .detail-modal-content .ac-icon { display:none; }
+    .detail-modal-content .kutu > *:not(.kutu-baslik):not(.ac-icon) {
+        display: block;
+        max-height: none !important;
+        overflow: visible !important;
+        padding-top: 0 !important;
+    }
+}
+</style>
+</head>
+<body>
+
+<div id="hasta-ozet">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <img src="https://picsum.photos/40?random=1" alt="Hasta">
+        <span>Ahmet Yılmaz - 35 / Erkek</span>
+    </div>
+
+    <div class="ust-butons">
+        <div class="btn-group primary-actions">
+            <button>💊 İlaç Yönetimi</button>
+            <button class="enabiz-btn" title="e-Nabız">
+                <img src="https://picsum.photos/18?random=5" alt="e-Nabız" style="height:18px; width:auto; display:block;">
+            </button>
+            <button>🧾 SGK</button>
+            <button>🩺 SİNA</button>
+        </div>
+
+        <div class="btn-group view-actions">
+            <button class="icon-btn" id="mikrofonToggleBtn" title="Mikrofon Başlat/Durdur">🎤</button>
+            <button class="icon-btn" id="fullscreenToggleBtn" title="Tam ekran Dashboard">🖥️</button>
+            <button class="icon-btn" id="leftPanelToggleBtn" title="Sol Paneli Gizle">⬅</button>
+            <button class="icon-btn" id="hizliBarToggleBtn" title="Hızlı Aksiyon Barını Aç/Kapat">⬇️</button>
+        </div>
+    </div>
+</div>
+
+<div id="hizli-aksiyon-bar">
+    <button class="icon-btn2" title="Barkod / Karekod Okut">📷</button>
+    <button class="icon-btn2" title="İlaç Reçetesi">💊</button>
+    <button class="icon-btn2" title="Hasta Notu Ekle">📝</button>
+    <button class="icon-btn2" title="Rapor Oluştur">📄</button>
+    <button class="icon-btn2" title="Laboratuvar İstem">🧪</button>
+    <button class="icon-btn2" title="Radyoloji İstem">🩻</button>
+    <button class="icon-btn2" title="e-Nabız Klinik Bilgi">🌐</button>
+    <button class="icon-btn2" title="Risk/Uyarı">⚠️</button>
+    <button class="icon-btn2" title="Acil Durum">🚨</button>
+    <button class="icon-btn2" title="Takvim / Randevu">📅</button>
+    <button class="icon-btn2" id="mobileMenuToggle" title="Ek Menüler">☰</button>
+</div>
+
+<div class="main-content-wrapper" id="mainWrapper">
+    <div class="sol-panel" id="solPanel">
+        <!-- KUTULAR (senin son versiyonun) -->
+        <div class="kutu" data-turu="hasta-bilgisi">
+            <div class="kutu-baslik">Hasta Bilgisi</div>
+            <span class="ac-icon">🔍</span>
+            <div class="hasta-kutu">
+                <img src="https://picsum.photos/100?random=1" alt="Hasta Resmi">
+                <div class="hasta-bilgiler">
+                    <p><strong>Ad:</strong> Ahmet</p>
+                    <p><strong>Soyad:</strong> Yılmaz</p>
+                    <p><strong>Cinsiyet:</strong> Erkek</p>
+                    <p><strong>Yaş:</strong> 35</p>
+                    <p><strong>Tel:</strong> 0555 123 45 67</p>
+                </div>
+            </div>
+            <div class="hasta-ayirici"></div>
+            <div class="hasta-ek-bilgiler">
+                <p><strong>T.C. No:</strong> 12345678901</p>
+                <p><strong>Dosya No:</strong> 2025-001234</p>
+                <p><strong>Protokol No:</strong> 785421</p>
+                <p><strong>Kurum / Güvence:</strong> SGK (Emekli)</p>
+                <p><strong>Poliklinik:</strong> Fizik Tedavi ve Rehabilitasyon</p>
+                <p><strong>Takip Eden Hekim:</strong> Uzm. Dr. Ayşe Demir</p>
+                <p><strong>Son Geliş:</strong> 25.11.2025 – 10:30</p>
+                <p><strong>Başvuru Nedeni:</strong> Bel ve bacak ağrısı</p>
+                <p><strong>Kronik Hastalıklar:</strong> Hipertansiyon, Tip 2 DM, Astım</p>
+                <p><strong>İlaç Özet:</strong> Amlodipin, Metformin, Inhaler bronkodilatör</p>
+                <p><strong>Alerjiler:</strong> Penisilin, Fındık</p>
+                <p><strong>Özel Durumlar:</strong> Tek böbrekli, BMI 32</p>
+                <p class="hasta-uyari">⚠ Antikoagülan kullanıyor (Warfarin) – Girişimlerde dikkat!</p>
+            </div>
+        </div>
+
+        <div class="kutu" data-turu="muayene">
+            <div class="kutu-baslik">Muayene Bilgileri</div>
+            <span class="ac-icon">🔍</span>
+            <table>
+                <tbody>
+                    <tr><td>Muayenesi</td><td class="muayene-ozet">Ayakta genel durum iyi, nabız 78, solunum normal, gözler canlı ve refleksler düzenli...</td></tr>
+                    <tr><td>Şikayeti</td><td class="muayene-ozet">Sırt ağrısı, baş dönmesi, ara sıra yorgunluk ve halsizlik belirtileri mevcut...</td></tr>
+                    <tr><td>Öyküsü</td><td class="muayene-ozet">7 ay önce başlayan ağrı, ilerleyen haftalarda hafifledi ancak bazen uzun süre oturunca tekrar artıyor...</td></tr>
+                    <tr><td>Tedavisi</td><td class="muayene-ozet">Fizik tedavi, egzersiz programı ve ağrı kesici düzenli olarak uygulanmakta...</td></tr>
+                    <tr><td>Anamnezi</td><td class="muayene-ozet">Hipertansiyon ve hafif astım öyküsü mevcut, ailede diyabet ve kalp hastalığı geçmişi...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="kutu" data-turu="teshis">
+            <div class="kutu-baslik">Teşhis Kodları</div>
+            <span class="ac-icon">🔍</span>
+            <table>
+                <tbody>
+                    <tr><td>ICD10: M54.5</td><td>Bel ağrısı</td></tr>
+                    <tr><td>ICD10: I10</td><td>Hipertansiyon</td></tr>
+                    <tr><td>ICD10: E11</td><td>Tip 2 Diyabet</td></tr>
+                    <tr><td>ICD10: J45</td><td>Astım</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="kutu" data-turu="laboratuvar">
+            <div class="kutu-baslik">Laboratuvar Sonuçları</div>
+            <span class="ac-icon">🔍</span>
+            <table>
+                <thead>
+                    <tr><th>Test</th><th>Sonuç</th><th>Referans</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>HbA1c</td><td>7.2%</td><td>4.0 - 6.0%</td></tr>
+                    <tr><td>Açlık Glukoz</td><td>132 mg/dL</td><td>70 - 100 mg/dL</td></tr>
+                    <tr><td>Kreatinin</td><td>1.3 mg/dL</td><td>0.6 - 1.2 mg/dL</td></tr>
+                    <tr><td>eGFR</td><td>58 mL/dk</td><td>&gt; 90 mL/dk</td></tr>
+                    <tr><td>LDL Kolesterol</td><td>130 mg/dL</td><td>&lt; 100 mg/dL</td></tr>
+                    <tr><td>Trigliserid</td><td>210 mg/dL</td><td>&lt; 150 mg/dL</td></tr>
+                    <tr><td>ALT</td><td>32 U/L</td><td>&lt; 40 U/L</td></tr>
+                    <tr><td>AST</td><td>29 U/L</td><td>&lt; 40 U/L</td></tr>
+                    <tr><td>CRP</td><td>3.2 mg/L</td><td>&lt; 5 mg/L</td></tr>
+                    <tr><td>WBC</td><td>7.8 x10³/µL</td><td>4.0 - 11.0</td></tr>
+                    <tr><td>Hgb</td><td>13.1 g/dL</td><td>13.0 - 17.0 g/dL</td></tr>
+                    <tr><td>Plt</td><td>260 x10³/µL</td><td>150 - 400</td></tr>
+                    <tr><td>Vitamin D</td><td>18 ng/mL</td><td>30 - 100 ng/mL</td></tr>
+                    <tr><td>TSH</td><td>2.1 µIU/mL</td><td>0.4 - 4.0 µIU/mL</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="kutu" data-turu="radyoloji">
+            <div class="kutu-baslik">Radyoloji Sonuçları</div>
+            <span class="ac-icon">🔍</span>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><img class="kucuk-resim" src="https://picsum.photos/50?random=2" alt="MR"></td>
+                        <td>Lomber MR: L4-L5 seviyesinde minimal protrüzyon, sinir köklerine belirgin bası izlenmedi.</td>
+                    </tr>
+                    <tr>
+                        <td><img class="kucuk-resim" src="https://picsum.photos/50?random=3" alt="BT"></td>
+                        <td>Beyin BT: Akut patoloji saptanmadı, kronik iskemik odaklar izleniyor.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="kutu" data-turu="recete">
+            <div class="kutu-baslik">İlaç Reçeteleri</div>
+            <span class="ac-icon">🔍</span>
+            <table>
+                <tbody>
+                    <tr><td>Metformin 1000 mg</td><td>2x1</td></tr>
+                    <tr><td>Amlodipin 5 mg</td><td>1x1</td></tr>
+                    <tr><td>İnhaler Bronkodilatör</td><td>Günde 2-3 kez</td></tr>
+                    <tr><td>Omeprazol 20 mg</td><td>1x1 (Sabah aç)</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="kutu" data-turu="asi">
+            <div class="kutu-baslik">Aşı ve Bağışıklama</div>
+            <span class="ac-icon">🔍</span>
+            <div class="responsive-table-container">
+                <div class="responsive-header">
+                    <div class="col-adi">Aşı Adı</div>
+                    <div class="col-doz">Doz</div>
+                    <div class="col-tarih">Son Uygulama</div>
+                    <div class="col-sonraki">Sonraki Doz</div>
+                    <div class="col-durum">Durum</div>
+                </div>
+
+                <div class="responsive-row">
+                    <div class="col-adi"><span class="label">Aşı Adı:</span>Tetanoz (Td)</div>
+                    <div class="col-doz"><span class="label">Doz:</span>Rutin</div>
+                    <div class="col-tarih"><span class="label">Son Uygulama:</span>12.05.2020</div>
+                    <div class="col-sonraki"><span class="label">Sonraki Doz:</span>12.05.2030</div>
+                    <div class="col-durum"><span class="label">Durum:</span>Güncel</div>
+                </div>
+
+                <div class="responsive-row">
+                    <div class="col-adi"><span class="label">Aşı Adı:</span>Grip Aşısı</div>
+                    <div class="col-doz"><span class="label">Doz:</span>Yıllık</div>
+                    <div class="col-tarih"><span class="label">Son Uygulama:</span>10.11.2024</div>
+                    <div class="col-sonraki"><span class="label">Sonraki Doz:</span>10.11.2025</div>
+                    <div class="col-durum"><span class="label">Durum:</span>Planlandı</div>
+                </div>
+
+                <div class="responsive-row uyari">
+                    <div class="col-adi"><span class="label">Aşı Adı:</span>Pnömokok (PPV23)</div>
+                    <div class="col-doz"><span class="label">Doz:</span>1 Doz</div>
+                    <div class="col-tarih"><span class="label">Son Uygulama:</span>01.03.2018</div>
+                    <div class="col-sonraki"><span class="label">Sonraki Doz:</span>Doktor kararı ile tekrar</div>
+                    <div class="col-durum"><span class="label">Durum:</span>Gözden geçir</div>
+                </div>
+
+                <div class="responsive-row">
+                    <div class="col-adi"><span class="label">Aşı Adı:</span>Covid-19 Bivalan</div>
+                    <div class="col-doz"><span class="label">Doz:</span>3. Doz</div>
+                    <div class="col-tarih"><span class="label">Son Uygulama:</span>15.01.2023</div>
+                    <div class="col-sonraki"><span class="label">Sonraki Doz:</span>Güncel rehbere göre</div>
+                    <div class="col-durum"><span class="label">Durum:</span>Önerilebilir</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="kutu" data-turu="notlar">
+            <div class="kutu-baslik">Hekim Notları ve Plan</div>
+            <span class="ac-icon">🔍</span>
+            <ul>
+                <li>Bel fıtığı açısından nörolojik muayene tekrarlanacak.</li>
+                <li>Gerekirse nöroşirürji konsültasyonu istenecek.</li>
+                <li>Kilo kontrolü ve egzersiz programına uyum vurgulandı.</li>
+                <li>Kan şekeri regülasyonu için endokrinoloji ile iletişim.</li>
+            </ul>
+        </div>
+
+        <div class="kutu" data-turu="randevu">
+            <div class="kutu-baslik">Randevu ve Kontroller</div>
+            <span class="ac-icon">🔍</span>
+            <table>
+                <tbody>
+                    <tr><td>Kontrol Muayene</td><td>15.12.2025 - 09:30</td></tr>
+                    <tr><td>Fizik Tedavi Seansı</td><td>Her hafta Salı/Perşembe</td></tr>
+                    <tr><td>Göz Kontrolü</td><td>20.01.2026 - 14:00</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="sag-icerik" id="sagPanel">
+        <div id="sag-icerik-icerik">
+            <div class="kutu">
+                <div class="kutu-baslik">Sağ Panel Başlangıç İçeriği</div>
+                <p>
+                    Sol panelden bir pencereye çift tıkladığınızda veya 🔍 ikonuna bastığınızda,
+                    ilgili pencerenin detayları burada açılacaktır.
+                </p>
+                <p>
+                    Ayrıca, üstteki 🖥️ ikonuna basarak tam ekran dashboard moduna geçebilir, ⬅ ikonuyla sol paneli gizleyebilir,
+                    mikrofon ikonuyla da sesli komutları başlatıp durdurabilirsiniz.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="edge-menu left">
+    <div class="edge-menu-tab">Sol Menü</div>
+    <div class="edge-menu-content">
+        <button>🏠 Ana Sayfa</button>
+        <button>📂 Dosya Geçmişi</button>
+        <button>👨‍⚕️ Konsültasyonlar</button>
+        <button>⚙️ Ayarlar</button>
+    </div>
+</div>
+
+<div class="edge-menu right">
+    <div class="edge-menu-tab">Hızlı İşlem</div>
+    <div class="edge-menu-content">
+        <button>🧾 Yeni Reçete</button>
+        <button>🧪 Yeni Tetkik</button>
+        <button>🩻 Görüntüleme İste</button>
+        <button>📅 Randevu Planlayıcı</button>
+        <button>📊 İstatistikler</button>
+        <button>📄 Rapor Şablonları</button>
+        <button>✉️ Konsültasyon</button>
+        <button>⚙️ Ayarlar</button>
+    </div>
+</div>
+
+<div id="mobile-menu-modal" class="menu-modal">
+    <div class="menu-modal-content">
+        <div class="menu-header">
+            <h3>Hızlı İşlemler</h3>
+            <button id="closeMobileMenu" class="close-btn">&times;</button>
+        </div>
+        <div class="menu-group">
+            <h4>Reçete ve Tetkikler</h4>
+            <button>💊 Yeni Reçete</button>
+            <button>🧪 Yeni Tetkik</button>
+            <button>🩻 Görüntüleme İste</button>
+        </div>
+        <div class="menu-group">
+            <h4>Hasta İşlemleri</h4>
+            <button>📂 Dosya Geçmişi</button>
+            <button>👨‍⚕️ Konsültasyonlar</button>
+            <button>📅 Randevu Planlayıcı</button>
+        </div>
+        <div class="menu-group">
+            <h4>Sistem</h4>
+            <button>📊 İstatistikler</button>
+            <button>📄 Rapor Şablonları</button>
+            <button>⚙️ Ayarlar</button>
+        </div>
+    </div>
+</div>
+
+<div id="card-detail-modal" class="detail-modal">
+    <div class="detail-modal-header">
+        <button id="closeDetailModalBtn" class="back-btn">⬅</button>
+        <h3 id="detail-modal-title">Pencere Adı</h3>
+    </div>
+    <div id="detail-modal-content" class="detail-modal-content"></div>
+</div>
+
+<script>
+const mainWrapper = document.getElementById('mainWrapper');
+const solPanel    = document.getElementById('solPanel');
+const sagPanel    = document.getElementById('sagPanel');
+const hastaOzet   = document.getElementById('hasta-ozet');
+const sagIcerik   = document.getElementById('sag-icerik-icerik');
+const hizliBar    = document.getElementById('hizli-aksiyon-bar');
+
+const fullscreenBtn = document.getElementById('fullscreenToggleBtn');
+const leftPanelBtn  = document.getElementById('leftPanelToggleBtn');
+const micBtn        = document.getElementById('mikrofonToggleBtn');
+const mobileMenuToggleBtn = document.getElementById('mobileMenuToggle');
+const mobileMenuModal = document.getElementById('mobile-menu-modal');
+const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
+
+const mobileDetailModal = document.getElementById('card-detail-modal');
+const detailModalTitle  = document.getElementById('detail-modal-title');
+const detailModalContent = document.getElementById('detail-modal-content');
+const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
+
+let solHidden = false;
+let micActive = false;
+let dashboardMode = false;
+let fullscreenRequestedByButton = false;
+
+let defaultSagIcerikHTML = sagIcerik ? sagIcerik.innerHTML : '';
+
+
+let recognition = null;
+const speechSupported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+const voiceBox = document.getElementById('voice-command-box');
+const voiceText = document.getElementById('voice-command-text');
+
+function showVoiceCommand(text) {
+    if (!voiceBox || !voiceText) return;
+    voiceText.textContent = text || '-';
+}
+
+// 🔹 Ortak helper: sol panelde ilgili pencereyi bulup sağda aç
+function openPanelByType(partOfDataTuru) {
+    if (!solPanel) return false;
+
+    const hedef = partOfDataTuru.toLowerCase();
+    const kutular = solPanel.querySelectorAll('.kutu');
+
+    for (const k of kutular) {
+        const tur = (k.dataset.turu || '').toLowerCase();
+        if (tur.includes(hedef)) {
+            // Sol panel kapalıysa aç
+            if (solHidden) toggleLeftPanel();
+            // Sağ panelde geniş olarak aç
+            openCardInRightPanel(k);
+            return true;
+        }
+    }
+    return false;
+}
+
+function handleVoiceCommand(cmd) {
+    const text = cmd.toLowerCase();
+
+    if (text.includes('dashboard aç') || text.includes('deşbord aç') || text.includes('daşbord aç') || text.includes('full ekran') || text.includes('değişport aç')) {
+        applyDashboardLayout(true);
+    } else if (text.includes('dashboard kapat') || text.includes('ekranı kapat')) {
+        applyDashboardLayout(false);
+    } else if (text.includes('sol panel kapat') || text.includes('sol paneli kapat') || text.includes('paneli kapat')) {
+        if (!solHidden) toggleLeftPanel();
+    } else if (text.includes('sol panel aç')  || text.includes('sol paneli aç') || text.includes('paneli aç')) {
+        if (solHidden) toggleLeftPanel();
+// 🔸 Pencereler
+    } else if (text.includes('hasta bilgisi') || text.includes('hasta kartı') || text.includes('hasta')) {
+        openPanelByType('hasta-bilgisi');
+
+    } else if (text.includes('muayene')) {
+        openPanelByType('muayene');
+
+    } else if (text.includes('teşhis') || text.includes('tanı') || text.includes('tani')) {
+        openPanelByType('teshis');
+
+    } else if (text.includes('laboratuvar') || text.includes('tahlil') || text.includes('lab')) {
+        openPanelByType('laboratuvar');
+
+    } else if (text.includes('radyoloji') || text.includes('film') || text.includes('bt') || text.includes('mr')) {
+        openPanelByType('radyoloji');
+
+    } else if (text.includes('reçete') || text.includes('ilaç')) {
+        openPanelByType('recete');
+
+    } else if (text.includes('aşı') || text.includes('bağışıklama')) {
+        openPanelByType('asi');
+
+    } else if (text.includes('notlar') || text.includes('plan')) {
+        openPanelByType('notlar');
+
+    } else if (text.includes('randevu') || text.includes('kontrol')) {
+        openPanelByType('randevu');
+    }
+}    // Buraya ileride yeni komutlar ekleyebiliriz.
+
+function startRecognition() {
+alert('BAKACAZ.');
+
+    if (!speechSupported) {
+        alert('Tarayıcınız sesli komut (SpeechRecognition) özelliğini desteklemiyor.');
+        micActive = false;
+        return;
+    }
+    if (!recognition) {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SR();
+        recognition.lang = 'tr-TR';
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+recognition.onstart = function () {
+        alert('onstart: Gerçekte dinlemeye başladı.');
+};
+alert('onstart: Gerçekte dinlemeye başladı.2222222');
+
+        recognition.onresult = (event) => {
+            const lastResult = event.results[event.results.length - 1];
+            if (!lastResult || !lastResult[0]) return;
+            const transcript = lastResult[0].transcript.trim();
+            console.log('Sesli komut:', transcript);
+            showVoiceCommand(transcript);
+            handleVoiceCommand(transcript);
+alert('onresult: ' + transcript);
+        };
+
+        recognition.onerror = (event) => {
+            console.error('SpeechRecognition error:', event.error);
+            // Hata olduğunda otomatik kapatalım
+            micActive = false;
+            micBtn.style.backgroundColor = 'inherit';
+            micBtn.style.color = '#000';
+            micBtn.title = 'Mikrofonu Başlat';
+            showVoiceCommand('Hata: ' + event.error);
+        };
+
+        recognition.onend = () => {
+            // Mikrofon açık görünüyorsa tekrar başlat
+            if (micActive) {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+        };
+    }
+
+    try {
+        recognition.start();
+        showVoiceCommand('Dinleniyor...');
+alert('Dinleniyor.');
+
+    } catch (e) {
+        console.error('Recognition start hatası:', e);
+alert('Dinleniyor OLMADI.');
+    }
+}
+
+function stopRecognition() {
+    if (recognition) {
+        micActive = false;
+        try {
+            recognition.stop();
+        } catch(e) {
+            console.error(e);
+        }
+        showVoiceCommand('-');
+    }
+}
+
+
+
+function calculateHeaderHeight() {
+    let height = 0;
+    if (hastaOzet && getComputedStyle(hastaOzet).display !== 'none') {
+        height += hastaOzet.offsetHeight;
+    }
+    if (hizliBar && getComputedStyle(hizliBar).display !== 'none') {
+        height += hizliBar.offsetHeight;
+    }
+    return height;
+}
+
+function getLeftPanelWidth() {
+    const isVisible = solPanel && getComputedStyle(solPanel).display !== 'none';
+    if (window.matchMedia("(max-width: 768px)").matches) return 0;
+    if (!isVisible || solHidden) return 0;
+    if (dashboardMode) return 0;
+    return solPanel.offsetWidth;
+}
+
+function updateFixedHeaderPosition() {
+    const offset = getLeftPanelWidth();
+    if (hastaOzet) hastaOzet.style.left = offset + 'px';
+    if (hizliBar) hizliBar.style.left = offset + 'px';
+}
+
+function setPanelOffsets() {
+    const totalHeaderHeight = calculateHeaderHeight();
+    const solPanelPadding = 10; 
+    
+    if (!window.matchMedia("(max-width: 768px)").matches) {
+        mainWrapper.style.marginTop = '0'; 
+        mainWrapper.style.height = '100vh';
+        mainWrapper.style.flexDirection = 'row';
+        if (sagPanel) sagPanel.style.display = 'block';
+
+        solPanel.style.marginTop = '0';
+        solPanel.style.height = '100vh';
+        solPanel.style.paddingTop = solPanelPadding + 'px'; 
+        
+        sagPanel.style.marginTop = totalHeaderHeight + 'px';
+        sagPanel.style.height = `calc(100vh - ${totalHeaderHeight}px)`;
+    } else {
+        mainWrapper.style.marginTop = totalHeaderHeight + 'px';
+        mainWrapper.style.height = 'auto';
+        mainWrapper.style.flexDirection = 'column';
+        
+        solPanel.style.marginTop = '0'; 
+        solPanel.style.height = 'auto'; 
+        solPanel.style.paddingTop = '8px';
+        
+        sagPanel.style.marginTop = '0';
+    }
+}
+
+/* Mobil detay modalı */
+function openCardDetailModal(kutu) {
+    if (!mobileDetailModal || !detailModalContent || !detailModalTitle) return;
+    const titleText = kutu.querySelector('.kutu-baslik').textContent;
+    detailModalTitle.textContent = titleText;
+    
+    detailModalContent.innerHTML = '';
+    const clone = kutu.cloneNode(true);
+    const ac = clone.querySelector('.ac-icon');
+    if (ac) ac.remove();
+    clone.classList.remove('active'); 
+    
+    clone.querySelectorAll('.muayene-ozet').forEach(td => {
+        td.style.display = 'block';
+        td.style.webkitLineClamp = 'unset';
+    });
+    if (kutu.dataset.turu === 'laboratuvar') {
+        const labTbody = clone.querySelector('table tbody');
+        if (labTbody) {
+             labTbody.style.maxHeight = 'none';
+             labTbody.style.overflowY = 'visible';
+             labTbody.style.display = 'table-row-group';
+        }
+    }
+    
+    detailModalContent.appendChild(clone);
+    mobileDetailModal.classList.add('active');
+    mobileDetailModal.scrollTop = 0;
+}
+function closeCardDetailModal() {
+    if (mobileDetailModal) {
+        mobileDetailModal.classList.remove('active');
+    }
+}
+
+/* Sağ panel tek kart detay */
+function openCardInRightPanel(kutu) {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+        openCardDetailModal(kutu);
+        return;
+    }
+    if (!sagIcerik) return;
+
+    const baslik = kutu.querySelector('.kutu-baslik') 
+        ? kutu.querySelector('.kutu-baslik').innerText 
+        : 'Detay';
+
+    sagIcerik.innerHTML = '';
+
+    const yeniKutu = document.createElement('div');
+    yeniKutu.className = 'kutu';
+
+    const yeniBaslik = document.createElement('div');
+    yeniBaslik.className = 'kutu-baslik';
+    yeniBaslik.textContent = baslik + ' (Detay)';
+    yeniKutu.appendChild(yeniBaslik);
+
+    const icerikKlon = kutu.cloneNode(true);
+    const ikon = icerikKlon.querySelector('.ac-icon');
+    if (ikon) ikon.remove();
+    icerikKlon.classList.remove('active');
+
+    if (kutu.dataset.turu === 'laboratuvar') {
+        const labTbody = icerikKlon.querySelector('table tbody');
+        if (labTbody) {
+            labTbody.style.maxHeight = 'none';
+            labTbody.style.overflowY = 'visible';
+            labTbody.style.display = 'table-row-group';
+        }
+    }
+    icerikKlon.querySelectorAll('.muayene-ozet').forEach(td => {
+        td.style.display = 'block';
+        td.style.webkitLineClamp = 'unset';
+    });
+
+    const baslikElemani = icerikKlon.querySelector('.kutu-baslik');
+    if (baslikElemani) baslikElemani.remove();
+    const acIconElemani = icerikKlon.querySelector('.ac-icon');
+    if (acIconElemani) acIconElemani.remove();
+
+    while (icerikKlon.firstChild) {
+        yeniKutu.appendChild(icerikKlon.firstChild);
+    }
+
+    sagIcerik.appendChild(yeniKutu);
+}
+
+/* Dashboard için kutu klonu – büyüteç korunuyor */
+function cloneKutuForRightPanel(kutu) {
+    const clone = kutu.cloneNode(true);
+
+    clone.querySelectorAll('.muayene-ozet').forEach(td => {
+        td.style.display = 'block';
+        td.style.webkitLineClamp = 'unset';
+    });
+
+    if (kutu.dataset.turu === 'laboratuvar') {
+        const labTbody = clone.querySelector('table tbody');
+        if (labTbody) {
+            labTbody.style.maxHeight = 'none';
+            labTbody.style.overflowY = 'visible';
+            labTbody.style.display = 'table-row-group';
+        }
+    }
+
+    return clone;
+}
+
+/* Sağ panel dashboard doldur – dashboard kartındaki büyütec tıklanınca detay aç */
+function showAllCardsInRightPanelDashboard() {
+    if (!sagIcerik || !solPanel) return;
+
+    sagIcerik.innerHTML = '';
+    const grid = document.createElement('div');
+    grid.className = 'dashboard-grid';
+
+    const kutular = solPanel.querySelectorAll('.kutu');
+    kutular.forEach((k, index) => {
+        const clone = cloneKutuForRightPanel(k);
+
+        const icon = clone.querySelector('.ac-icon');
+        if (icon) {
+            icon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                applyDashboardLayout(false);
+
+                const originals = solPanel.querySelectorAll('.kutu');
+                const original = originals[index];
+                if (original) {
+                    openCardInRightPanel(original);
+                }
+            });
+        }
+
+        grid.appendChild(clone);
+    });
+
+    sagIcerik.appendChild(grid);
+    if (sagPanel) sagPanel.scrollTop = 0;
+}
+
+/* Dashboard layout uygulama */
+function applyDashboardLayout(active) {
+    dashboardMode = active;
+
+    if (window.matchMedia("(max-width: 768px)").matches) {
+        return;
+    }
+
+    if (active) {
+        solPanel.style.display = 'none';
+        sagPanel.style.width = '100%';
+        solHidden = true;
+        showAllCardsInRightPanelDashboard();
+
+        fullscreenBtn.textContent = '📊';
+        fullscreenBtn.title = "Dashboard'u kapat";
+        leftPanelBtn.textContent = '➡️';
+        leftPanelBtn.title = 'Sol Paneli Göster';
+    } else {
+        solPanel.style.display = 'flex';
+        if (window.matchMedia("(max-width: 1024px)").matches) {
+            solPanel.style.width = '35%';
+            sagPanel.style.width = '65%';
+        } else {
+            solPanel.style.width = '25%';
+            sagPanel.style.width = '75%';
+        }
+        solHidden = false;
+
+        if (sagIcerik && defaultSagIcerikHTML) {
+            sagIcerik.innerHTML = defaultSagIcerikHTML;
+        }
+
+        fullscreenBtn.textContent = '🖥️';
+        fullscreenBtn.title = 'Tam ekran Dashboard';
+        leftPanelBtn.textContent = '⬅';
+        leftPanelBtn.title = 'Sol Paneli Gizle';
+    }
+
+    updateFixedHeaderPosition();
+    setPanelOffsets();
+}
+
+/* Fullscreen değişimi (F11 / ESC dahil) */
+function handleFullscreenChange() {
+    const isFS = !!document.fullscreenElement;
+
+    if (!isFS) {
+        fullscreenRequestedByButton = false;
+        applyDashboardLayout(false);
+    } else {
+        if (fullscreenRequestedByButton) {
+            applyDashboardLayout(true);
+            fullscreenRequestedByButton = false;
+        }
+    }
+}
+
+/* 🔴 SOL PANEL GİZLE/GÖSTER – SADELEŞTİRİLMİŞ HALİ */
+function toggleLeftPanel() {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+        return;
+    }
+
+    if (!solHidden) {
+        // Sadece sol paneli gizle, sağ paneli tam genişlik yap
+        solPanel.style.display = 'none';
+        sagPanel.style.width = '100%';
+        leftPanelBtn.textContent = '➡️';
+        leftPanelBtn.title = 'Sol Paneli Göster';
+        solHidden = true;
+    } else {
+        // Sol paneli tekrar göster, sağ paneli eski oranına çek
+        solPanel.style.display = 'flex';
+        if (window.matchMedia("(max-width: 1024px)").matches) {
+            solPanel.style.width = '35%';
+            sagPanel.style.width = '65%';
+        } else {
+            solPanel.style.width = '25%';
+            sagPanel.style.width = '75%';
+        }
+        leftPanelBtn.textContent = '⬅';
+        leftPanelBtn.title = 'Sol Paneli Gizle';
+        solHidden = false;
+    }
+
+    // İçerik aynen kalır, sadece layout değişir
+    updateFixedHeaderPosition();
+    setPanelOffsets();
+}
+
+/* Akordeon (mobil) */
+function toggleAccordion(event) {
+    const kutu = event.currentTarget.closest('.kutu');
+    if (!kutu) return;
+    kutu.classList.toggle('active');
+}
+
+/* Click handler kurulumları – sol panel kartları için */
+function setupClickHandlers() {
+    if (!solPanel) return;
+    const kutular = solPanel.querySelectorAll('.kutu');
+
+    kutular.forEach(kutu => {
+        const icon = kutu.querySelector('.ac-icon');
+        const baslik = kutu.querySelector('.kutu-baslik');
+        const detailHandler = () => openCardInRightPanel(kutu);
+
+        kutu.removeEventListener('dblclick', detailHandler);
+        if (icon) icon.removeEventListener('click', detailHandler);
+        if (baslik) baslik.removeEventListener('click', toggleAccordion); 
+
+        if (!window.matchMedia("(max-width: 768px)").matches) {
+            kutu.addEventListener('dblclick', detailHandler);
+            if (icon) icon.addEventListener('click', detailHandler);
+            kutu.classList.remove('active'); 
+        } else {
+            if (baslik) baslik.addEventListener('click', toggleAccordion);
+            if (icon) icon.addEventListener('click', detailHandler); 
+        }
+    });
+}
+
+function handleResizeAndLoad() {
+    setupClickHandlers();
+    
+    if (mainWrapper) {
+        if (window.matchMedia("(max-width: 768px)").matches) {
+            mainWrapper.style.flexDirection = 'column';
+            if (sagPanel) sagPanel.style.display = 'none';
+        } else {
+            mainWrapper.style.flexDirection = 'row';
+            if (sagPanel) sagPanel.style.display = 'block'; 
+            mainWrapper.style.marginTop = '0'; 
+            mainWrapper.style.height = '100vh';
+        }
+    }
+    updateFixedHeaderPosition();
+    setPanelOffsets();
+}
+
+function toggleHizliBar() {
+    if (!hizliBar) return;
+    const currentDisplay = getComputedStyle(hizliBar).display;
+    if (currentDisplay === 'none') {
+        hizliBar.style.display = 'flex';
+        hizliBar.style.visibility = 'visible';
+    } else {
+        hizliBar.style.display = 'none';
+        hizliBar.style.visibility = 'hidden';
+    }
+    updateFixedHeaderPosition();
+    setPanelOffsets();
+}
+
+
+function toggleMic() {
+    micActive = !micActive;
+    if (micActive) {
+        micBtn.style.backgroundColor = '#ff5252';
+        micBtn.style.color = '#fff';
+        micBtn.title = 'Mikrofonu Durdur';
+    } else {
+        micBtn.style.backgroundColor = 'inherit';
+        micBtn.style.color = '#000';
+        micBtn.title = 'Mikrofonu Başlat';
+    }
+}
+
+function toggleMic() {
+    micActive = !micActive;
+
+    if (micActive) {
+        micBtn.style.backgroundColor = '#ff5252';
+        micBtn.style.color = '#fff';
+        micBtn.title = 'Mikrofonu Durdur';
+        startRecognition();
+    } else {
+        micBtn.style.backgroundColor = 'inherit';
+        micBtn.style.color = '#000';
+        micBtn.title = 'Mikrofonu Başlat';
+        stopRecognition();
+    }
+}
+
+
+function openMobileMenu() {
+    if (!mobileMenuModal) return;
+    mobileMenuModal.style.display = 'block';
+}
+function closeMobileMenu() {
+    if (!mobileMenuModal) return;
+    mobileMenuModal.style.display = 'none';
+}
+
+/* Tam ekran butonu */
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+        if (isMobile) {
+            applyDashboardLayout(!dashboardMode);
+            return;
+        }
+
+        if (!document.fullscreenElement) {
+            fullscreenRequestedByButton = true;
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error("Native fullscreen başlatılamadı:", err);
+                fullscreenRequestedByButton = false;
+                applyDashboardLayout(true);
+            });
+        } else {
+            applyDashboardLayout(!dashboardMode);
+        }
+    });
+}
+
+/* Event bağlamaları */
+if (leftPanelBtn) {
+    leftPanelBtn.addEventListener('click', toggleLeftPanel);
+}
+if (micBtn) {
+    micBtn.addEventListener('click', toggleMic);
+}
+if (mobileMenuToggleBtn) {
+    mobileMenuToggleBtn.addEventListener('click', openMobileMenu);
+}
+if (closeMobileMenuBtn) {
+    closeMobileMenuBtn.addEventListener('click', closeMobileMenu);
+}
+if (closeDetailModalBtn) {
+    closeDetailModalBtn.addEventListener('click', closeCardDetailModal);
+}
+document.getElementById('hizliBarToggleBtn')?.addEventListener('click', toggleHizliBar);
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+window.addEventListener('load', handleResizeAndLoad);
+window.addEventListener('resize', handleResizeAndLoad);
+</script>
+
+
+<div id="voice-command-box">
+    🎤 Son komut: <span id="voice-command-text">-</span>
+</div>
+
+
+</body>
+</html>
