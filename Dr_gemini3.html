@@ -1055,6 +1055,22 @@ function openPanelByType(partOfDataTuru) {
 
 function handleVoiceCommand(cmd) {
     const text = cmd.toLowerCase();
+	
+    if (text.includes('geri dön') || text.includes('geri don') || text.includes('geri')  || text.includes('dön') || text.includes('don')) {
+        // Eğer mobil detay modalı açıksa, geri butonuna basılmış gibi yap
+        if (mobileDetailModal && mobileDetailModal.classList.contains('active')) {
+            if (closeDetailModalBtn) {
+                closeDetailModalBtn.click();   // aynen kullanıcı oka basmış gibi
+            } else {
+                // emniyet: buton yoksa direkt fonksiyonu çağır
+                if (typeof closeCardDetailModal === 'function') {
+                    closeCardDetailModal();
+                }
+            }
+        }
+        return; // Bu komutu işledik, alttaki diğer if'lere geçmesin
+    }
+
 
     if (text.includes('dashboard aç') || text.includes('deşbord aç') || text.includes('daşbord aç') || text.includes('full ekran') || text.includes('değişport aç')) {
         applyDashboardLayout(true);
