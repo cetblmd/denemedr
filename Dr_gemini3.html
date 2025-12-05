@@ -233,19 +233,26 @@ th {
 }
 
 /* Üst bar 2 */
+/* Hızlı aksiyon bar (2. satır ikonlar) */
 #hizli-aksiyon-bar {
     background: #c8def0;
-    padding: 2px 3px;
+    padding: 2px 6px;
     display: flex;
-    gap: 2px;
+    gap: 4px;
     align-items: center;
     border-bottom: 1px solid #b0c8d8;
+
     position: fixed;
     top: 48px;
+    left: 0;
     right: 0;
     z-index: 9998;
-    justify-content: flex-end; 
+
+    /* PC / tablet / mobil hepsinde butonlar SAĞA dayalı */
+    justify-content: flex-end;
 }
+
+/* 2. satır ikon butonlar */
 .icon-btn2 {
     width: 32px;
     height: 32px;
@@ -255,15 +262,26 @@ th {
     align-items:center;
     justify-content:center;
     font-size:18px;
+
     background: #c8def0;
     color: #000;
-    border: none;
+    border: 1px solid #b0c8d8;
 }
+
+/* Hover efekti */
 .icon-btn2:hover {
     background: #bcd3e6;
 }
-#hasta-ozet .icon-btn,
+
+/* Her ihtimale karşı görünür kıl */
 #hizli-aksiyon-bar .icon-btn2 {
+    background: #c8def0 !important;
+    color: #000 !important;
+    border: none !important;
+}
+
+
+#hasta-ozet .icon-btn  {
     background: inherit !important;
     color: #000 !important;
     border: none !important;
@@ -427,6 +445,12 @@ th {
     overflow: auto;
     background-color: rgba(0,0,0,0.6);
 }
+
+
+.menu-modal.active {
+    display: block;   /* 🔹 JS active ekleyince modal görünsün */
+}
+
 .menu-modal-content {
     background-color: #fefefe;
     margin: 15% auto; 
@@ -531,6 +555,10 @@ th {
         padding: 4px 6px;
         font-size: 12px;
     }
+
+/*    #mobileMenuToggle {
+        display:flex;
+    }*/	
 }
 
 /* Mobil */
@@ -543,6 +571,7 @@ th {
     .main-content-wrapper {
         flex-direction: column;
         height: auto;
+        margin-top: 0 !important;
     }
     .sol-panel,
     .sag-icerik {
@@ -578,6 +607,16 @@ th {
         top: 44px;
         padding: 2px;
     }
+
+#hasta-ozet,
+    #hizli-aksiyon-bar {
+        position: static;
+        width: 100%;
+    }
+.main-content-wrapper {
+        margin-top: 0;
+    }
+
     #hasta-ozet .ust-butons {
         flex-wrap: wrap; 
         justify-content: flex-end;
@@ -592,6 +631,7 @@ th {
         height: 26px;
         font-size: 14px;
     }
+
     .edge-menu { display:none; }
     #mobileMenuToggle { display:flex; }
 
@@ -600,6 +640,11 @@ th {
         padding: 0;
         background-color: #f5f5f5;
     }
+
+    .menu-modal.active {
+        display: block;         /* veya flex */
+    }
+
     .menu-modal-content {
         margin: 0;
         width: 100%;
@@ -724,6 +769,7 @@ th {
         </div>
     </div>
 </div>
+
 
 <div id="hizli-aksiyon-bar">
     <button class="icon-btn2" title="Barkod / Karekod Okut">📷</button>
@@ -926,6 +972,7 @@ th {
         </div>
     </div>
 
+
     <div class="sag-icerik" id="sagPanel">
         <div id="sag-icerik-icerik">
             <div class="kutu">
@@ -941,6 +988,7 @@ th {
             </div>
         </div>
     </div>
+
 </div>
 
 <div class="edge-menu left">
@@ -1011,6 +1059,8 @@ const sagIcerik   = document.getElementById('sag-icerik-icerik');
 const hizliBar    = document.getElementById('hizli-aksiyon-bar');
 
 const fullscreenBtn = document.getElementById('fullscreenToggleBtn');
+const hizliBarToggleBtn = document.getElementById('hizliBarToggleBtn'); 
+
 const leftPanelBtn  = document.getElementById('leftPanelToggleBtn');
 const micBtn        = document.getElementById('mikrofonToggleBtn');
 const mobileMenuToggleBtn = document.getElementById('mobileMenuToggle');
@@ -1029,6 +1079,8 @@ let initialViewApplied = false;
 let fullscreenRequestedByButton = false;
 
 let defaultSagIcerikHTML = sagIcerik ? sagIcerik.innerHTML : '';
+let lastRightPanelHTML = defaultSagIcerikHTML;
+
 
 
 let recognition = null;
@@ -1132,7 +1184,6 @@ function startRecognition() {
         recognition.continuous = true;
         recognition.interimResults = false;
 
-/*CETCET*/
 recognition.onstart = function () {
         micBtn.style.backgroundColor = '#2ecc71';  // yeşil
         micBtn.style.color = '#fff';
@@ -1156,7 +1207,6 @@ recognition.onend = function () {
                 micBtn.title = 'Mikrofonu Başlat';
             }
         };
-/*CETCET*/
 
         recognition.onresult = (event) => {
             const lastResult = event.results[event.results.length - 1];
@@ -1177,18 +1227,6 @@ recognition.onend = function () {
             showVoiceCommand('Hata: ' + event.error);
         };
 
-/*	
-        recognition.onend = () => {
-            // Mikrofon açık görünüyorsa tekrar başlat
-            if (micActive) {
-                try {
-                    recognition.start();
-                } catch(e) {
-                    console.error(e);
-                }
-            }
-        };
-*/
     }
 
     try {
@@ -1352,6 +1390,7 @@ function openCardInRightPanel(kutu) {
     }
 
     sagIcerik.appendChild(yeniKutu);
+    lastRightPanelHTML = sagIcerik.innerHTML;
 }
 
 /* Dashboard için kutu klonu – büyüteç korunuyor */
@@ -1437,9 +1476,9 @@ function applyDashboardLayout(active) {
         }
         solHidden = false;
 
-        if (sagIcerik && defaultSagIcerikHTML) {
-            sagIcerik.innerHTML = defaultSagIcerikHTML;
-        }
+	if (sagIcerik) {
+	    sagIcerik.innerHTML = lastRightPanelHTML || defaultSagIcerikHTML;
+	}
 
         fullscreenBtn.textContent = '🖥️';
         fullscreenBtn.title = 'Tam ekran Dashboard';
@@ -1530,6 +1569,29 @@ function setupClickHandlers() {
         }
     });
 }
+
+function toggleHizliBar() {
+    if (!hizliBar) return;
+
+    const currentlyHidden = window.getComputedStyle(hizliBar).display === 'none';
+
+    if (currentlyHidden) {
+        // Barı göster
+        hizliBar.style.display = 'flex';
+        if (hizliBarToggleBtn) {
+            hizliBarToggleBtn.textContent = '⬇️';
+            hizliBarToggleBtn.title = 'Hızlı Aksiyon Barını Gizle';
+        }
+    } else {
+        // Barı gizle
+        hizliBar.style.display = 'none';
+        if (hizliBarToggleBtn) {
+            hizliBarToggleBtn.textContent = '⬆️';
+            hizliBarToggleBtn.title = 'Hızlı Aksiyon Barını Göster';
+        }
+    }
+}
+
 
 function handleResizeAndLoad() {
     setupClickHandlers();
@@ -1651,6 +1713,11 @@ if (fullscreenBtn) {
 if (leftPanelBtn) {
     leftPanelBtn.addEventListener('click', toggleLeftPanel);
 }
+
+if (hizliBarToggleBtn) {             
+    hizliBarToggleBtn.addEventListener('click', toggleHizliBar);
+}
+
 if (micBtn) {
     micBtn.addEventListener('click', toggleMic);
 }
