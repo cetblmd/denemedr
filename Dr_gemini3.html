@@ -555,7 +555,7 @@ th {
 
 
 /* Tablet */
-@media (max-width: 1024px) {
+@media (max-width: 1024px) and (min-width: 769px) {
     body { font-size: 14px; }
     .main-content-wrapper {
         height: 100vh;
@@ -576,6 +576,25 @@ th {
         font-size: 12px;
     }
 
+    /* 1. SATIR - Yüksekliği küçült, stabil olsun */
+    #hasta-ozet {
+        height: 44px !important;
+        padding: 4px 6px !important;
+    }
+
+    /* 2. SATIR - Tablet için doğru yere yerleştir */
+    #hizli-aksiyon-bar {
+        top: 44px !important;      /* 1.satırın tam altına gelsin */
+        height: 36px !important;
+        padding: 4px 6px !important;
+    }
+
+    /* 2. satır ikonlarını tablet için hafif küçültelim */
+    #hizli-aksiyon-bar .icon-btn2 {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
 }
 
 /* Mobil */
@@ -756,6 +775,10 @@ th {
         max-height: none !important;
         overflow: visible !important;
         padding-top: 0 !important;
+    }
+
+    #leftPanelToggleBtn {
+        display: none !important;
     }
 }
 </style>
