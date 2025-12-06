@@ -1708,24 +1708,6 @@ function toggleMic() {
     }
 }
 
-/*
-function toggleMic() {
-    micActive = !micActive;
-
-    if (micActive) {
-
-        micBtn.style.backgroundColor = '#ff5252';
-        micBtn.style.color = '#fff';
-        micBtn.title = 'Mikrofonu Durdur';
-        startRecognition();
-    } else {
-        micBtn.style.backgroundColor = 'inherit';
-        micBtn.style.color = '#000';
-        micBtn.title = 'Mikrofonu Başlat';
-        stopRecognition();
-    }
-}
-*/
 
 function openMobileMenu() {
     if (!mobileMenuModal) return;
@@ -1741,11 +1723,27 @@ if (fullscreenBtn) {
     fullscreenBtn.addEventListener('click', () => {
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
+        // 🔹 MOBİLDE: sadece F11 gibi davransın (native fullscreen aç/kapat)
         if (isMobile) {
-            applyDashboardLayout(!dashboardMode);
+            if (!document.fullscreenElement) {
+                // Tam ekran değilse → tam ekrana geç
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.error("Mobile fullscreen başlatılamadı:", err);
+                    });
+                }
+            } else {
+                // Zaten tam ekrandaysa → tam ekrandan çık
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(err => {
+                        console.error("Mobile fullscreen'den çıkılamadı:", err);
+                    });
+                }
+            }
             return;
         }
 
+        // 🔹 PC / TABLET: mevcut davranış aynen kalsın
         if (!document.fullscreenElement) {
             fullscreenRequestedByButton = true;
             document.documentElement.requestFullscreen().catch(err => {
