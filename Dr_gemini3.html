@@ -1123,6 +1123,15 @@ let solAllExpanded= false;
 let defaultSagIcerikHTML = sagIcerik ? sagIcerik.innerHTML : '';
 let lastRightPanelHTML = defaultSagIcerikHTML;
 
+// Ekran modu: 'mobile' | 'tablet' | 'desktop'
+function getViewportMode() {
+    const w = window.innerWidth;
+    if (w <= 768) return 'mobile';
+    if (w <= 1024) return 'tablet';
+    return 'desktop';
+}
+
+let currentViewportMode = getViewportMode();
 
 
 let recognition = null;
@@ -1634,41 +1643,91 @@ function toggleHizliBar() {
     }
 }
 
-
 function handleResizeAndLoad() {
     setupClickHandlers();
-    
+
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const isTablet = !isMobile && window.matchMedia("(max-width: 1024px)").matches;
+
+    // Ana wrapper yön / yükseklik
     if (mainWrapper) {
-        if (window.matchMedia("(max-width: 768px)").matches) {
+        if (isMobile) {
             mainWrapper.style.flexDirection = 'column';
-            if (sagPanel) sagPanel.style.display = 'none';
+            mainWrapper.style.height = 'auto';
+            mainWrapper.style.marginTop = '0';
         } else {
             mainWrapper.style.flexDirection = 'row';
-            if (sagPanel) sagPanel.style.display = 'block'; 
-            mainWrapper.style.marginTop = '0'; 
             mainWrapper.style.height = '100vh';
+            mainWrapper.style.marginTop = '0';
         }
     }
+
+    // 💡 MOBILE: hep sol panel açık, sağ panel gizli (sen zaten modal kullanıyorsun)
+    if (isMobile) {
+        if (solPanel) {
+            solPanel.style.display = 'flex';
+            solPanel.style.width   = '100%';
+        }
+        if (sagPanel) {
+            sagPanel.style.display = 'none';
+            sagPanel.style.width   = '100%';
+        }
+    } else {
+        // 💡 TABLET / PC
+
+        if (dashboardMode) {
+            // Dashboard açıksa, layout'u ona göre yeniden kur
+            applyDashboardLayout(true);
+        } else if (solHidden) {
+            // Sol panel gizli mod
+            if (solPanel) solPanel.style.display = 'none';
+            if (sagPanel) {
+                sagPanel.style.display = 'block';
+                sagPanel.style.width   = '100%';
+            }
+            if (leftPanelBtn) {
+                leftPanelBtn.textContent = '➡️';
+                leftPanelBtn.title       = 'Sol Paneli Göster';
+            }
+        } else {
+            // Normal mod: sol + sağ yan yana
+            if (solPanel) {
+                solPanel.style.display = 'flex';
+                solPanel.style.width   = isTablet ? '35%' : '25%';
+            }
+            if (sagPanel) {
+                sagPanel.style.display = 'block';
+                sagPanel.style.width   = isTablet ? '65%' : '75%';
+            }
+            if (leftPanelBtn) {
+                leftPanelBtn.textContent = '⬅';
+                leftPanelBtn.title       = 'Sol Paneli Gizle';
+            }
+        }
+    }
+
     updateFixedHeaderPosition();
     setPanelOffsets();
 
+    // İlk açılış (veya sayfa ilk kez yüklendiğinde) default görünüm
     if (!initialViewApplied) {
-        if (!window.matchMedia("(max-width: 768px)").matches) {
-            // Masaüstü: sağ panelde hasta bilgisi detay açılsın
-            const hastaCard = solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]');
+        if (!isMobile) {
+            const hastaCard = solPanel
+                ? solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]')
+                : null;
             if (hastaCard) {
                 openCardInRightPanel(hastaCard);
             }
         } else {
-            // Mobil: sol panelde hasta bilgisi kutusu açık gelsin
-            const hastaCardMobile = solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]');
+            const hastaCardMobile = solPanel
+                ? solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]')
+                : null;
             if (hastaCardMobile) {
                 hastaCardMobile.classList.add('active');
             }
         }
         initialViewApplied = true;
     }
-
 }
 
 function toggleHizliBar() {
@@ -1809,16 +1868,27 @@ document.getElementById('hizliBarToggleBtn')?.addEventListener('click', toggleHi
 
 document.addEventListener('fullscreenchange', handleFullscreenChange);
 window.addEventListener('load', handleResizeAndLoad);
-window.addEventListener('resize', handleResizeAndLoad);
 
+window.addEventListener('resize', () => {
+    const newMode = getViewportMode();
+
+    // Eğer mobile ↔ tablet ↔ desktop modu DEĞİŞTİYSE → sayfayı yenile
+    if (newMode !== currentViewportMode) {
+        currentViewportMode = newMode;
+        window.location.reload();
+    } else {
+        // Sadece aynı mod içinde boyut ufak ufak oynuyorsa, normal düzenlemeyi yap
+        handleResizeAndLoad();
+    }
+});
 
 </script>
 
-
+/*
 <div id="voice-command-box">
     🎤 Son komut: <span id="voice-command-text">-</span>
 </div>
-
+*/
 
 </body>
 </html>
