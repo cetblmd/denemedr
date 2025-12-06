@@ -320,6 +320,13 @@ th {
 }
 /* Lab için zaten .full desteği var; ekstra bir şey gerekirse buraya ekleriz */
 
+/* 🔹 GENEL: full modda tüm kart içeriklerini tamamen göster */
+.kutu.full .kutu-icerik {
+    max-height: none;
+    overflow: visible;
+    display: block;
+}
+
 
 .kutu[data-turu="laboratuvar"] table thead,
 .kutu[data-turu="laboratuvar"] table tbody tr {
@@ -569,10 +576,6 @@ th {
         font-size: 12px;
     }
 
-
-/*    #mobileMenuToggle {
-        display:flex;
-    }*/	
 }
 
 /* Mobil */
@@ -1662,24 +1665,31 @@ function toggleHizliBar() {
 
 function toggleSolPanelFullContent() {
     if (!solPanel) return;
+
     solAllExpanded = !solAllExpanded;
 
     const kutular = solPanel.querySelectorAll('.kutu');
-    kutular.forEach(k => {
+
+    kutular.forEach(kutu => {
         if (solAllExpanded) {
-            k.classList.add('full');
+            // PC/Tablet için: içerik kısaltmasını kaldırmak üzere
+            kutu.classList.add('full');
+            // Mobil akordiyon için: içeriği görünür yapar
+            kutu.classList.add('active');
         } else {
-            k.classList.remove('full');
+            kutu.classList.remove('full');
+            kutu.classList.remove('active');
         }
     });
 
     if (leftAllExpandBtn) {
-        leftAllExpandBtn.title = solAllExpanded
-            ? 'Sol panelde tam içerikleri kapat'
-            : 'Sol panelde tüm içerikleri göster';
-
-        // İstersen ikon da değiştirebiliriz:
-        leftAllExpandBtn.textContent = solAllExpanded ? '📄' : '📜';
+        if (solAllExpanded) {
+            leftAllExpandBtn.textContent = '📄';
+            leftAllExpandBtn.title = 'Sol panelde tam içerikleri kapat';
+        } else {
+            leftAllExpandBtn.textContent = '📜';
+            leftAllExpandBtn.title = 'Sol panelde tüm içerikleri göster';
+        }
     }
 }
 
