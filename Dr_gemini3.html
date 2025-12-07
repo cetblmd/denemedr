@@ -148,6 +148,10 @@ th {
     text-overflow: ellipsis;
 }
 
+/* Mobil menü ikonu */
+#mobileMenuToggle { display:none !important; }
+
+
 /* Üst bar 1 */
 #hasta-ozet {
     background:#d0e7f9;
@@ -293,9 +297,6 @@ th {
     border: 1px solid #27ae60 !important;
 }
 
-
-/* Mobil menü ikonu */
-#mobileMenuToggle { display:none; }
 
 /* Lab */
 .kutu[data-turu="laboratuvar"] table tbody {
@@ -669,7 +670,17 @@ th {
     }
 
     .edge-menu { display:none; }
-    #mobileMenuToggle { display:flex; }
+    #mobileMenuToggle { 
+	display:flex !important; 
+	margin-left: 8px;
+        width: 32px;
+        height: 32px;
+        font-size: 20px;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border-radius: 6px;
+    }
 
     .menu-modal {
         display: none; 
@@ -807,7 +818,7 @@ th {
 	    <button class="icon-btn" id="leftAllExpandBtn" title="Sol panelde tüm içerikleri göster">📜</button>
             <button class="icon-btn" id="leftPanelToggleBtn" title="Sol Paneli Gizle">⬅</button>
             <button class="icon-btn" id="hizliBarToggleBtn" title="Hızlı Aksiyon Barını Aç/Kapat">⬇️</button>
-        </div>
+	    <button class="icon-btn" id="mobileMenuToggle" title="Mobil Menü">☰</button>        </div>
     </div>
 </div>
 
@@ -823,7 +834,6 @@ th {
     <button class="icon-btn2" title="Risk/Uyarı">⚠️</button>
     <button class="icon-btn2" title="Acil Durum">🚨</button>
     <button class="icon-btn2" title="Takvim / Randevu">📅</button>
-    <button class="icon-btn2" id="mobileMenuToggle" title="Ek Menüler">☰</button>
 </div>
 
 <div class="main-content-wrapper" id="mainWrapper">
@@ -1884,11 +1894,6 @@ window.addEventListener('resize', () => {
 
 </script>
 
-/*
-<div id="voice-command-box">
-    🎤 Son komut: <span id="voice-command-text">-</span>
-</div>
-*/
-
+	
 </body>
 </html>
