@@ -23,6 +23,7 @@
             border-radius: 12px;
             padding: 16px 18px 20px;
             box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+	    position: relative; 
         }
         h1 {
             font-size: 20px;
@@ -166,7 +167,27 @@
     </style>
 </head>
 <body>
+
+
 <div class="page">
+
+	<button id="closeConfigBtn" 
+        style="
+            position: absolute;   /* fixed yerine absolute */
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: #ff5c5c;
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        ">
+        ✖
+    </button>
+
     <h1>Sol Paneli Özelleştir</h1>
     <div class="subtitle">
         Sol panelde hangi pencerelerin görüneceğini ve sırasını buradan belirleyebilirsiniz.
@@ -460,6 +481,12 @@ if (saveBtn) {
     saveBtn.addEventListener('click', () => {
         const newConfig = readConfigFromDOM();
         saveConfig(newConfig);
+
+// 300ms bekleyip geri dönüyoruz (görsel olarak “kaydedildi”'nin görünmesi için)
+    setTimeout(() => {
+        window.location.href = 'dr_gemini3.html';
+    }, 300);
+
     });
 }
 
@@ -471,6 +498,16 @@ if (resetBtn) {
         saveConfig(def);
     });
 }
+
+// Sağ üstteki kapatma butonu
+const closeConfigBtn = document.getElementById('closeConfigBtn');
+if (closeConfigBtn) {
+    closeConfigBtn.addEventListener('click', () => {
+        window.location.href = 'dr_gemini3.html';
+    });
+}
+
+
 </script>
 </body>
 </html>
