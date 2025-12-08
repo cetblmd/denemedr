@@ -399,6 +399,20 @@ th {
     background: #0d4a78 !important;
 }
 
+.settings-submenu {
+    display: none;             /* başlangıçta kapalı */
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+    margin-left: 8px;          /* biraz içerden başlasın */
+}
+
+.settings-submenu button {
+    font-size: 12px;
+    padding-left: 18px;        /* sekmeli gibi dursun */
+}
+
+
 #sag-icerik-icerik {
     margin-top: 12px;
     padding: 10px;
@@ -839,7 +853,7 @@ th {
 <div class="main-content-wrapper" id="mainWrapper">
     <div class="sol-panel" id="solPanel">
         <!-- KUTULAR (senin son versiyonun) -->
-        <div class="kutu" data-turu="hasta-bilgisi">
+	  <div class="kutu" id="panel-hasta-bilgisi" data-turu="hasta-bilgisi">
             <div class="kutu-baslik">Hasta Bilgisi</div>
             <span class="ac-icon">🔍</span>
             <div class="hasta-kutu">
@@ -870,7 +884,7 @@ th {
             </div>
         </div>
 
-        <div class="kutu" data-turu="muayene">
+        <div class="kutu" id="panel-muayene" data-turu="muayene">
             <div class="kutu-baslik">Muayene Bilgileri</div>
             <span class="ac-icon">🔍</span>
             <table>
@@ -884,7 +898,7 @@ th {
             </table>
         </div>
 
-        <div class="kutu" data-turu="teshis">
+        <div class="kutu" id="panel-teshis" data-turu="teshis">
             <div class="kutu-baslik">Teşhis Kodları</div>
             <span class="ac-icon">🔍</span>
             <table>
@@ -897,7 +911,7 @@ th {
             </table>
         </div>
 
-        <div class="kutu" data-turu="laboratuvar">
+        <div class="kutu" id="panel-laboratuvar" data-turu="laboratuvar">
             <div class="kutu-baslik">Laboratuvar Sonuçları</div>
             <span class="ac-icon">🔍</span>
             <table>
@@ -923,7 +937,7 @@ th {
             </table>
         </div>
 
-        <div class="kutu" data-turu="radyoloji">
+        <div class="kutu" id="panel-radyoloji" data-turu="radyoloji">
             <div class="kutu-baslik">Radyoloji Sonuçları</div>
             <span class="ac-icon">🔍</span>
             <table>
@@ -940,7 +954,7 @@ th {
             </table>
         </div>
 
-        <div class="kutu" data-turu="recete">
+        <div class="kutu" id="panel-recete" data-turu="recete">
             <div class="kutu-baslik">İlaç Reçeteleri</div>
             <span class="ac-icon">🔍</span>
             <table>
@@ -953,7 +967,7 @@ th {
             </table>
         </div>
 
-        <div class="kutu" data-turu="asi">
+        <div class="kutu" id="panel-asi" data-turu="asi">
             <div class="kutu-baslik">Aşı ve Bağışıklama</div>
             <span class="ac-icon">🔍</span>
             <div class="responsive-table-container">
@@ -999,7 +1013,7 @@ th {
             </div>
         </div>
 
-        <div class="kutu" data-turu="notlar">
+        <div class="kutu" id="panel-notlar" data-turu="notlar">
             <div class="kutu-baslik">Hekim Notları ve Plan</div>
             <span class="ac-icon">🔍</span>
             <ul>
@@ -1010,7 +1024,7 @@ th {
             </ul>
         </div>
 
-        <div class="kutu" data-turu="randevu">
+        <div class="kutu" id="panel-randevu" data-turu="randevu">
             <div class="kutu-baslik">Randevu ve Kontroller</div>
             <span class="ac-icon">🔍</span>
             <table>
@@ -1048,9 +1062,18 @@ th {
         <button>🏠 Ana Sayfa</button>
         <button>📂 Dosya Geçmişi</button>
         <button>👨‍⚕️ Konsültasyonlar</button>
-        <button>⚙️ Ayarlar</button>
+
+        <!-- Açılır Ayarlar menüsü -->
+        <button id="settingsMainBtn" type="button">⚙️ Ayarlar ▾</button>
+        <div id="settingsSubmenu" class="settings-submenu">
+            <button type="button" onclick="window.location.href='AnamnezSolPanelOzellestir.html'">
+                🧩 Sol Paneli Özelleştir
+            </button>
+            <!-- İlerde buraya başka alt ayarlar da ekleyebiliriz -->
+        </div>
     </div>
 </div>
+
 
 <div class="edge-menu right">
     <div class="edge-menu-tab">Hızlı İşlem</div>
@@ -1088,7 +1111,15 @@ th {
             <h4>Sistem</h4>
             <button>📊 İstatistikler</button>
             <button>📄 Rapor Şablonları</button>
-            <button>⚙️ Ayarlar</button>
+<!-- Açılır Ayarlar + alt menü -->
+            <button id="mobileSettingsMainBtn" type="button" title="Ayarlar">⚙️ Ayarlar ▾</button>
+            <div id="mobileSettingsSubmenu" class="settings-submenu">
+                <button
+                    type="button"
+                    onclick="window.location.href='AnamnezSolPanelOzellestir.html'">
+                    🧩 Sol Paneli Özelleştir
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -1117,6 +1148,15 @@ const micBtn        = document.getElementById('mikrofonToggleBtn');
 const mobileMenuToggleBtn = document.getElementById('mobileMenuToggle');
 const mobileMenuModal = document.getElementById('mobile-menu-modal');
 const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
+
+const settingsMainBtn = document.getElementById('settingsMainBtn');
+const settingsSubmenu = document.getElementById('settingsSubmenu');
+let settingsMenuOpen = false;
+
+const mobileSettingsMainBtn = document.getElementById('mobileSettingsMainBtn');
+const mobileSettingsSubmenu = document.getElementById('mobileSettingsSubmenu');
+let mobileSettingsMenuOpen = false;
+
 
 const mobileDetailModal = document.getElementById('card-detail-modal');
 const detailModalTitle  = document.getElementById('detail-modal-title');
@@ -1173,6 +1213,66 @@ function openPanelByType(partOfDataTuru) {
     }
     return false;
 }
+
+/* === SOL PANEL ÖZELLEŞTİRME AYARLARINI UYGULA === */
+
+function applySolPanelConfig() {
+    const raw = localStorage.getItem('solPanelConfig');
+    if (!raw) return;  // hiç ayar yoksa dokunma
+
+    let config;
+    try {
+        config = JSON.parse(raw);
+    } catch {
+        return;
+    }
+    if (!Array.isArray(config)) return;
+
+    const solPanel = document.getElementById('solPanel');
+    if (!solPanel) return;
+
+    // 1) Sıraya göre kutuları yeniden diz
+    config.forEach(item => {
+        if (!item || !item.id) return;
+        const el = document.getElementById(item.id); // Örn: panel-hasta-bilgisi
+        if (el && el.parentElement === solPanel) {
+            solPanel.appendChild(el); // sıraya göre sona ekleyerek diz
+        }
+    });
+
+    // 2) Görünürlük ayarlarını uygula
+    config.forEach(item => {
+        if (!item || !item.id) return;
+        const el = document.getElementById(item.id);
+        if (el && el.parentElement === solPanel) {
+            el.style.display = item.enabled === false ? 'none' : '';
+        }
+    });
+}
+
+function getDefaultPanelIdFromConfig() {
+    const raw = localStorage.getItem('solPanelConfig');
+    if (!raw) return null;
+
+    try {
+        const cfg = JSON.parse(raw);
+        if (!Array.isArray(cfg)) return null;
+
+        // Önce isDefault && enabled olanı bul
+        let chosen = cfg.find(c => c.isDefault && c.enabled);
+        // Yoksa ilk enabled paneli al
+        if (!chosen) {
+            chosen = cfg.find(c => c.enabled);
+        }
+
+        return chosen ? chosen.id : null;  // Örn: "panel-hasta-bilgisi"
+    } catch (e) {
+        console.error('solPanelConfig parse hatası:', e);
+        return null;
+    }
+}
+
+
 
 function handleVoiceCommand(cmd) {
     const text = cmd.toLowerCase();
@@ -1719,23 +1819,34 @@ function handleResizeAndLoad() {
     updateFixedHeaderPosition();
     setPanelOffsets();
 
-    // İlk açılış (veya sayfa ilk kez yüklendiğinde) default görünüm
+    // 🔹 İlk açılışta config'e göre default paneli aç
     if (!initialViewApplied) {
-        if (!isMobile) {
-            const hastaCard = solPanel
-                ? solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]')
-                : null;
-            if (hastaCard) {
-                openCardInRightPanel(hastaCard);
-            }
-        } else {
-            const hastaCardMobile = solPanel
-                ? solPanel.querySelector('.kutu[data-turu="hasta-bilgisi"]')
-                : null;
-            if (hastaCardMobile) {
-                hastaCardMobile.classList.add('active');
+        // 1) Ayarlardan default panel id'sini al
+        let defaultId = getDefaultPanelIdFromConfig();
+
+        // 2) Config yoksa / hata varsa geriye uyum için hasta-bilgisi'ne dön
+        if (!defaultId) {
+            defaultId = 'panel-hasta-bilgisi';
+        }
+
+        const defaultCard = document.getElementById(defaultId);
+
+        if (defaultCard) {
+            if (!isMobile) {
+                // Masaüstü / tablet: sağ panelde default kartı aç
+                if (typeof openCardInRightPanel === 'function') {
+                    openCardInRightPanel(defaultCard);
+                }
+            } else {
+                // Mobile: sol panelde default kartı aktif yap
+                const solPanel = document.getElementById('solPanel');
+                if (solPanel) {
+                    solPanel.querySelectorAll('.kutu').forEach(k => k.classList.remove('active'));
+                }
+                defaultCard.classList.add('active');
             }
         }
+
         initialViewApplied = true;
     }
 }
@@ -1808,6 +1919,16 @@ function openMobileMenu() {
 function closeMobileMenu() {
     if (!mobileMenuModal) return;
     mobileMenuModal.style.display = 'none';
+
+    // Mobil ayarlar alt menüsünü de kapat
+    if (mobileSettingsSubmenu) {
+        mobileSettingsSubmenu.style.display = 'none';
+    }
+    mobileSettingsMenuOpen = false;
+    if (mobileSettingsMainBtn) {
+        mobileSettingsMainBtn.textContent = '⚙️ Ayarlar ▾';
+    }
+
 }
 
 /* Tam ekran butonu */
@@ -1876,6 +1997,30 @@ if (closeDetailModalBtn) {
 }
 document.getElementById('hizliBarToggleBtn')?.addEventListener('click', toggleHizliBar);
 
+if (settingsMainBtn && settingsSubmenu) {
+    settingsMainBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsMenuOpen = !settingsMenuOpen;
+        settingsSubmenu.style.display = settingsMenuOpen ? 'flex' : 'none';
+        settingsMainBtn.textContent = settingsMenuOpen
+            ? '⚙️ Ayarlar ▴'
+            : '⚙️ Ayarlar ▾';
+    });
+}
+
+if (mobileSettingsMainBtn && mobileSettingsSubmenu) {
+    mobileSettingsMainBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        mobileSettingsMenuOpen = !mobileSettingsMenuOpen;
+        mobileSettingsSubmenu.style.display = mobileSettingsMenuOpen ? 'flex' : 'none';
+        mobileSettingsMainBtn.textContent = mobileSettingsMenuOpen
+            ? '⚙️ Ayarlar ▴'
+            : '⚙️ Ayarlar ▾';
+    });
+}
+
+
+
 document.addEventListener('fullscreenchange', handleFullscreenChange);
 window.addEventListener('load', handleResizeAndLoad);
 
@@ -1890,6 +2035,23 @@ window.addEventListener('resize', () => {
         // Sadece aynı mod içinde boyut ufak ufak oynuyorsa, normal düzenlemeyi yap
         handleResizeAndLoad();
     }
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Sol panel sırasını ve görünürlüğünü uygula
+    applySolPanelConfig();
+
+    // Açılışta layout + default panel için
+    handleResizeAndLoad();
+
+    // Ayar ekranından dönülüp config değişirse: sadece sol panel sırasını/görünürlüğünü güncelle
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'solPanelConfig') {
+            applySolPanelConfig();
+            handleResizeAndLoad(); // istersen bunu da koy; sadece görünüm tazelensin
+        }
+    });
 });
 
 </script>
