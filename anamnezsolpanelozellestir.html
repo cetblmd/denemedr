@@ -41,16 +41,18 @@
             margin: 0 0 12px;
         }
 
-        /* ÜST BAŞLIK VE SATIRLAR AYNI GRID YAPISINI KULLANIYOR */
+        /* ÜST BAŞLIK VE SATIRLAR AYNI GRID YAPISINI KULLANIYOR
+           [ Görünsün ] [ Pencere adı ] [ Açılışta ilk göster ]
+        */
         .panel-header,
         .panel-item {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 80px 130px; /* Panel | Görünsün | Açılışta ilk göster */
+            grid-template-columns: 70px minmax(0, 1fr) 130px;
             align-items: center;
             padding: 8px 10px;
         }
 
-        /* Başlık özel stilleri */
+        /* Başlık satırı */
         .panel-header {
             margin-bottom: 8px;
             padding-left: 10px;
@@ -58,10 +60,6 @@
             font-size: 13px;
             color: #374151;
             font-weight: 600;
-        }
-
-        .ph-left {
-            grid-column: 1;
         }
 
         /* SATIR STİLLERİ */
@@ -74,11 +72,12 @@
             transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
         }
 
+        /* Orta kolon: pencere adı */
         .panel-left {
-            grid-column: 1;
+            grid-column: 2;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px; /* 8'den 4'e düşürdük */
         }
 
         .drag-handle {
@@ -96,16 +95,17 @@
             color: #9ca3af;
         }
 
-        /* SAĞ KOLONLAR (HEM BAŞLIKTA HEM SATIRDA AYNI KULLANILIYOR) */
+        /* 1. kolon: Görünsün */
         .col-visible {
-            grid-column: 2;
+            grid-column: 1;
             display: flex;
             align-items: center;
-            justify-content: flex-start;  /* hepsi sola hizalı */
-            padding-left: 8px;           /* aynı x noktasından başlasınlar */
+            justify-content: flex-start;
+            padding-left: 0;   /* 4'ten 0'a düşürdük */
             gap: 4px;
         }
 
+        /* 3. kolon: Açılışta ilk göster */
         .col-default {
             grid-column: 3;
             display: flex;
@@ -113,11 +113,8 @@
             justify-content: center;
         }
 
+        .ph-visible-label,
         .ph-default-label {
-            font-size: 13px;
-        }
-
-        .ph-visible-label {
             font-size: 13px;
         }
 
@@ -201,9 +198,21 @@
                 margin: 8px;
                 padding: 12px;
             }
+
+            /* Mobilde oranları isimlere daha çok alan verecek şekilde ayarla */
             .panel-header,
             .panel-item {
-                grid-template-columns: minmax(0, 1fr) 60px 110px;
+                grid-template-columns: 60px minmax(0, 1.6fr) 110px;
+            }
+
+            .ph-visible-label,
+            .ph-default-label {
+                font-size: 11px;
+                white-space: nowrap;
+            }
+
+            .panel-title {
+                font-size: 13px;
             }
         }
     </style>
@@ -235,14 +244,15 @@
         <div id="statusBadge"></div>
     </div>
 
-    <!-- ÜST BAŞLIK: GRID + AYNI KOLONLAR -->
+    <!-- ÜST BAŞLIK: Görünsün solda, ortada boş, sağda Açılışta ilk göster -->
     <div class="panel-header">
-        <div class="ph-left">Panel</div>
-
         <div class="col-visible">
             <input type="checkbox" id="toggleAllVisible">
             <span class="ph-visible-label">Görünsün</span>
         </div>
+
+        <!-- Orta kolon: başlık olarak bir şey istemiyoruz, boş bırakıyoruz -->
+        <div></div>
 
         <div class="col-default">
             <span class="ph-default-label">Açılışta ilk göster</span>
@@ -390,19 +400,19 @@ function renderList(config) {
         const defId = 'default-' + item.id;
 
         li.innerHTML = `
+            <div class="col-visible">
+                <input type="checkbox"
+                       id="${visId}"
+                       class="panel-enabled-checkbox"
+                       ${item.enabled ? 'checked' : ''}>
+            </div>
+
             <div class="panel-left">
                 <span class="drag-handle" title="Sürükle">☰</span>
                 <div>
                     <div class="panel-title">${panelDef.title}</div>
                     <div class="panel-key">${panelDef.id}</div>
                 </div>
-            </div>
-
-            <div class="col-visible">
-                <input type="checkbox"
-                       id="${visId}"
-                       class="panel-enabled-checkbox"
-                       ${item.enabled ? 'checked' : ''}>
             </div>
 
             <div class="col-default">
