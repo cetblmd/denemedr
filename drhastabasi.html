@@ -1259,8 +1259,6 @@ function resizeHastaBilgisiFrame() {
             frame.style.height = body.scrollHeight + 'px';
         });
     } catch (e) {
-alert("hata");
-alert(e);
         console.error('hastaBilgisiFrame resize hatası:', e);
     }
 }
@@ -1533,32 +1531,55 @@ function updateFixedHeaderPosition() {
 function setPanelOffsets() {
     const totalHeaderHeight = calculateHeaderHeight();
     const solPanelPadding = 10; 
-    
-    if (!window.matchMedia("(max-width: 768px)").matches) {
-        mainWrapper.style.marginTop = '0'; 
-        mainWrapper.style.height = 'auto';
-        mainWrapper.style.minHeight = '100vh';
-        mainWrapper.style.flexDirection = 'row';
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-        solPanel.style.marginTop = '0';
-        solPanel.style.height = 'auto';
-        solPanel.style.paddingTop = solPanelPadding + 'px'; 
-        
-        sagPanel.style.marginTop = totalHeaderHeight + 'px';
-        sagPanel.style.height = 'auto';
-        sagPanel.style.minHeight = `calc(100vh - ${totalHeaderHeight}px)`;
+    if (!isMobile) {
+        // 💻 Masaüstü / tablet: SAYFA SCROLL YOK, sadece paneller scroll
+        document.body.style.overflow = 'hidden';
+
+        if (mainWrapper) {
+            mainWrapper.style.marginTop   = '0';
+            mainWrapper.style.height      = '100vh';
+            mainWrapper.style.minHeight   = '100vh';
+            mainWrapper.style.flexDirection = 'row';
+        }
+
+        if (solPanel) {
+            solPanel.style.marginTop   = '0';
+            solPanel.style.paddingTop  = solPanelPadding + 'px';
+            // Sol panel kendi içinde scroll yapsın diye sabit yükseklik
+            solPanel.style.height      = '100vh';
+        }
+
+        if (sagPanel) {
+            sagPanel.style.marginTop   = totalHeaderHeight + 'px';
+            // Sağ panel yüksekliği: header’lar çıktıktan sonra kalan alan
+            const h = `calc(100vh - ${totalHeaderHeight}px)`;
+            sagPanel.style.height      = h;
+            sagPanel.style.minHeight   = h;
+        }
     } else {
-        mainWrapper.style.marginTop = totalHeaderHeight + 'px';
-        mainWrapper.style.height = 'auto';
-        mainWrapper.style.flexDirection = 'column';
-        
-        solPanel.style.marginTop = '0'; 
-        solPanel.style.height = 'auto'; 
-        solPanel.style.paddingTop = '8px';
-        
-        sagPanel.style.marginTop = '0';
-        sagPanel.style.height = 'auto';
-        sagPanel.style.minHeight = '0';
+        // 📱 Mobil: sayfa normal scroll, paneller alt alta
+        document.body.style.overflow = 'auto';
+
+        if (mainWrapper) {
+            mainWrapper.style.marginTop   = totalHeaderHeight + 'px';
+            mainWrapper.style.height      = 'auto';
+            mainWrapper.style.minHeight   = '100vh';
+            mainWrapper.style.flexDirection = 'column';
+        }
+
+        if (solPanel) {
+            solPanel.style.marginTop   = '0';
+            solPanel.style.height      = 'auto';
+            solPanel.style.paddingTop  = '8px';
+        }
+
+        if (sagPanel) {
+            sagPanel.style.marginTop   = '0';
+            sagPanel.style.height      = 'auto';
+            sagPanel.style.minHeight   = '0';
+        }
     }
 }
 
