@@ -81,6 +81,27 @@ body {
     gap: 5px;
     cursor: pointer; 
 }
+
+/* Başlıktaki aç/kapa oku (hem mobil hem desktop) */
+.kutu-toggle-btn {
+    margin-right: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: #0b3c61;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.kutu-toggle-btn:focus {
+    outline: none;
+}
+
 .kutu .ac-icon {
     position: absolute;
     top: 10px;
@@ -138,6 +159,31 @@ body {
     background: transparent;
     min-height: 340px;
 }
+
+/* Desktop için sol panel kart aç/kapa davranışı */
+@media (min-width: 769px) {
+    .sol-panel .kutu.collapsed > *:not(.kutu-baslik):not(.ac-icon) {
+        display: none;
+        max-height: 0;
+        overflow: hidden;
+    }
+
+    .sol-panel .kutu.expanded > *:not(.kutu-baslik):not(.ac-icon) {
+        display: block;
+        max-height: 2000px;
+        overflow: visible;
+        padding-top: 6px;
+    }
+
+    .sol-panel .kutu.expanded .muayene-ozet {
+        display: block;
+        -webkit-line-clamp: unset;
+        -webkit-box-orient: initial;
+        overflow: visible;
+        text-overflow: unset;
+    }
+}
+
 
 /* Mobilde biraz daha yüksek dursun */
 @media (max-width: 768px) {
@@ -1136,7 +1182,7 @@ th {
         <!-- Açılır Ayarlar menüsü -->
         <button id="settingsMainBtn" type="button">⚙️ Ayarlar ▾</button>
         <div id="settingsSubmenu" class="settings-submenu">
-            <button type="button" onclick="window.location.href='anamnezsolpanelozellestir.html'">
+            <button type="button" onclick="window.location.href='drhastabasisolpanelozellestir.html'">
                 🧩 Sol Paneli Özelleştir
             </button>
             <!-- İlerde buraya başka alt ayarlar da ekleyebiliriz -->
@@ -1182,14 +1228,14 @@ th {
             <button>📊 İstatistikler</button>
             <button>📄 Rapor Şablonları</button>
 <!-- Açılır Ayarlar + alt menü -->
-            <button id="mobileSettingsMainBtn" type="button" title="Ayarlar">⚙️ Ayarlar ▾</button>
-            <div id="mobileSettingsSubmenu" class="settings-submenu">
-                <button
-                    type="button"
-                    onclick="window.location.href='anamnezsolpanelozellestir.html'">
-                    🧩 Sol Paneli Özelleştir
-                </button>
-            </div>
+<button id="mobileSettingsMainBtn" type="button" title="Ayarlar">⚙️ Ayarlar ▾</button>
+<div id="mobileSettingsSubmenu" class="settings-submenu">
+    <button
+        type="button"
+        onclick="window.location.href='drhastabasisolpanelozellestir.html'">
+        🧩 Sol Paneli Özelleştir
+    </button>
+</div>
         </div>
     </div>
 </div>
@@ -1339,6 +1385,21 @@ function applySolPanelConfig() {
             el.style.display = item.enabled === false ? 'none' : '';
         }
     });
+
+// 3) Açık durum (full) ayarlarını uygula
+config.forEach(item => {
+    if (!item || !item.id) return;
+    const el = document.getElementById(item.id);
+    if (el && el.parentElement === solPanel) {
+        // acikDurum === true ise sol panelde o kartı tam açık başlat
+        if (item.acikDurum) {
+            el.classList.add('full');
+        } else {
+            el.classList.remove('full');
+        }
+    }
+});
+
 }
 
 function getDefaultPanelIdFromConfig() {
@@ -1363,6 +1424,32 @@ function getDefaultPanelIdFromConfig() {
     }
 }
 
+function getOpenPanelIdsFromConfig() {
+    const raw = localStorage.getItem('solPanelConfig');
+    if (!raw) return [];
+
+    try {
+        const cfg = JSON.parse(raw);
+        if (!Array.isArray(cfg)) return [];
+
+        // Config'te hiç acikDurum alanı yoksa – eski datalar için
+        const hasAcikFlag = cfg.some(c => typeof c.acikDurum !== 'undefined');
+
+        if (!hasAcikFlag) {
+            // Eski davranışa uyum: default paneli tek başına aç
+            const defId = getDefaultPanelIdFromConfig();
+            return defId ? [defId] : [];
+        }
+
+        // enabled && acikDurum olanların id'lerini döndür
+        return cfg
+            .filter(c => c && c.enabled !== false && c.acikDurum)
+            .map(c => c.id);
+    } catch (e) {
+        console.error('solPanelConfig parse hatası (acikDurum):', e);
+        return [];
+    }
+}
 
 
 function handleVoiceCommand(cmd) {
@@ -1842,12 +1929,62 @@ function toggleLeftPanel() {
     resizeHastaBilgisiFrame();
 }
 
-/* Akordeon (mobil) */
+/* Aç/Kapa – hem mobil hem desktop için ortak */
 function toggleAccordion(event) {
-    const kutu = event.currentTarget.closest('.kutu');
+    const baslik = event.currentTarget;
+    const kutu = baslik.closest('.kutu');
     if (!kutu) return;
-    kutu.classList.toggle('active');
+
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const headerEl = kutu.querySelector('.kutu-baslik');
+    const toggleBtn = headerEl ? headerEl.querySelector('.kutu-toggle-btn') : null;
+
+    if (isMobile) {
+        // Mobil: mevcut akordeon mantığı
+        kutu.classList.toggle('active');
+    } else {
+        // Desktop: collapsed / expanded mantığı
+        if (kutu.classList.contains('expanded')) {
+            kutu.classList.remove('expanded');
+            kutu.classList.add('collapsed');
+        } else {
+            kutu.classList.add('expanded');
+            kutu.classList.remove('collapsed');
+        }
+        // Desktop’ta mobil .active class'ı gereksiz
+        kutu.classList.remove('active');
+    }
+
+    // Ok ikonunu güncelle
+    if (toggleBtn) {
+        const isOpen = isMobile
+            ? kutu.classList.contains('active')
+            : kutu.classList.contains('expanded');
+        toggleBtn.textContent = isOpen ? '▾' : '▸';
+    }
 }
+
+// Desktop için kartı kapat / aç
+function setKutuCollapsedDesktop(kutu, collapsed) {
+    if (window.matchMedia("(max-width: 768px)").matches) return; // sadece desktop
+    if (collapsed) {
+        kutu.classList.add('collapsed');
+        kutu.classList.remove('expanded');
+    } else {
+        kutu.classList.add('expanded');
+        kutu.classList.remove('collapsed');
+    }
+}
+
+function toggleKutuDesktop(kutu) {
+    if (window.matchMedia("(max-width: 768px)").matches) return; // sadece desktop
+    if (kutu.classList.contains('expanded')) {
+        setKutuCollapsedDesktop(kutu, true);
+    } else {
+        setKutuCollapsedDesktop(kutu, false);
+    }
+}
+
 
 /* Click handler kurulumları – sol panel kartları için */
 function setupClickHandlers() {
@@ -1855,22 +1992,79 @@ function setupClickHandlers() {
     const kutular = solPanel.querySelectorAll('.kutu');
 
     kutular.forEach(kutu => {
-        const icon = kutu.querySelector('.ac-icon');
+        const icon   = kutu.querySelector('.ac-icon');
         const baslik = kutu.querySelector('.kutu-baslik');
-        const detailHandler = () => openCardInRightPanel(kutu);
+        if (!baslik) return;
 
-        kutu.removeEventListener('dblclick', detailHandler);
-        if (icon) icon.removeEventListener('click', detailHandler);
-        if (baslik) baslik.removeEventListener('click', toggleAccordion); 
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-        if (!window.matchMedia("(max-width: 768px)").matches) {
-            kutu.addEventListener('dblclick', detailHandler);
-            if (icon) icon.addEventListener('click', detailHandler);
-            kutu.classList.remove('active'); 
-        } else {
-            if (baslik) baslik.addEventListener('click', toggleAccordion);
-            if (icon) icon.addEventListener('click', detailHandler); 
+        // Başlığa aç/kapa oku ekle (yoksa)
+        let toggleBtn = baslik.querySelector('.kutu-toggle-btn');
+        if (!toggleBtn) {
+            toggleBtn = document.createElement('button');
+            toggleBtn.type = 'button';
+            toggleBtn.className = 'kutu-toggle-btn';
+            toggleBtn.textContent = '▸';
+            baslik.prepend(toggleBtn);
         }
+
+        // Başlangıç durumu
+        if (isMobile) {
+            const isOpen = kutu.classList.contains('active');
+            toggleBtn.textContent = isOpen ? '▾' : '▸';
+        } else {
+            // Desktop: default tek satır (collapsed), istenirse full veya expanded yapılabilir
+            if (!kutu.classList.contains('collapsed') &&
+                !kutu.classList.contains('expanded')) {
+                kutu.classList.add('collapsed');
+            }
+            const isOpen = kutu.classList.contains('expanded');
+            toggleBtn.textContent = isOpen ? '▾' : '▸';
+            // Mobilde kullanılan active class'ını temizle
+            kutu.classList.remove('active');
+        }
+
+        // Sağ panele detay açma (veya mobilde detay modalı)
+        const detailHandler = (evt) => {
+            if (evt) evt.stopPropagation();
+            const mobileNow = window.matchMedia("(max-width: 768px)").matches;
+
+            openCardInRightPanel(kutu);
+
+            if (!mobileNow) {
+                // Desktop: sağa alınca sol panelde tek satıra kapan
+                kutu.classList.add('collapsed');
+                kutu.classList.remove('expanded');
+                const h = kutu.querySelector('.kutu-baslik .kutu-toggle-btn');
+                if (h) h.textContent = '▸';
+            }
+        };
+
+        // Büyüteç: her yerde sadece detayı açsın
+        if (icon) {
+            icon.onclick = detailHandler;
+        }
+
+        // Başlığa tıklayınca (adın olduğu her yer) aç/kapa – büyüteç hariç
+        baslik.onclick = (e) => {
+            if (e.target && e.target.closest('.ac-icon')) {
+                // büyüteç’e tıklanmışsa burayı çalıştırma
+                return;
+            }
+            toggleAccordion({ currentTarget: baslik });
+        };
+
+        // Ok butonuna tıklayınca da aç/kapa (başlık click’ini tetikliyoruz)
+        toggleBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleAccordion({ currentTarget: baslik });
+        };
+
+        // Desktop’ta kartın tamamına çift tıklayınca sağ panele aç
+        kutu.ondblclick = (e) => {
+            if (e.target && e.target.closest('.ac-icon')) return;
+            detailHandler(e);
+        };
     });
 }
 
@@ -1967,35 +2161,40 @@ if (mainWrapper) {
     resizeHastaBilgisiFrame();
 
     // 🔹 İlk açılışta config'e göre default paneli aç
-    if (!initialViewApplied) {
-        // 1) Ayarlardan default panel id'sini al
-        let defaultId = getDefaultPanelIdFromConfig();
+// 🔹 İlk açılışta config'teki "Açık Durum" pencerelerini kullan
+if (!initialViewApplied) {
+    const openIds = getOpenPanelIdsFromConfig();   // acikDurum=true + enabled olanlar
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-        // 2) Config yoksa / hata varsa geriye uyum için hasta-bilgisi'ne dön
-        if (!defaultId) {
-            defaultId = 'panel-hasta-bilgisi';
-        }
+    // Sağ panel için ilk açılacak pencere
+    let firstId = openIds.length > 0 ? openIds[0] : null;
 
-        const defaultCard = document.getElementById(defaultId);
-
-        if (defaultCard) {
-            if (!isMobile) {
-                // Masaüstü / tablet: sağ panelde default kartı aç
-                if (typeof openCardInRightPanel === 'function') {
-                    openCardInRightPanel(defaultCard);
-                }
-            } else {
-                // Mobile: sol panelde default kartı aktif yap
-                const solPanel = document.getElementById('solPanel');
-                if (solPanel) {
-                    solPanel.querySelectorAll('.kutu').forEach(k => k.classList.remove('active'));
-                }
-                defaultCard.classList.add('active');
-            }
-        }
-
-        initialViewApplied = true;
+    if (!firstId) {
+        // Hiç "Açık Durum" işaretli yoksa fallback
+        firstId = 'panel-hasta-bilgisi';
     }
+
+    const firstCard = document.getElementById(firstId);
+
+    if (firstCard) {
+        if (!isMobile) {
+            // Masaüstü / tablet: sağ panelde ilk açık pencereyi göster
+            if (typeof openCardInRightPanel === 'function') {
+                openCardInRightPanel(firstCard);
+            }
+        } else {
+            // Mobile: sadece birini aktif yapabiliriz, o yüzden ilkini aktif yapıyoruz
+            const solPanelEl = document.getElementById('solPanel');
+            if (solPanelEl) {
+                solPanelEl.querySelectorAll('.kutu').forEach(k => k.classList.remove('active'));
+            }
+            firstCard.classList.add('active');
+        }
+    }
+
+    // NOT: sol panelde "Açık Durum" olanlar zaten applySolPanelConfig içinde .full yapıldı
+    initialViewApplied = true;
+}
 }
 
 function toggleHizliBar() {
