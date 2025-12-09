@@ -23,7 +23,7 @@
             border-radius: 12px;
             padding: 16px 18px 20px;
             box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
-	    position: relative; 
+            position: relative;
         }
         h1 {
             font-size: 20px;
@@ -40,11 +40,32 @@
             padding: 0;
             margin: 0 0 12px;
         }
+
+        /* ÜST BAŞLIK VE SATIRLAR AYNI GRID YAPISINI KULLANIYOR */
+        .panel-header,
         .panel-item {
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 80px 130px; /* Panel | Görünsün | Açılışta ilk göster */
             align-items: center;
-            justify-content: space-between;
             padding: 8px 10px;
+        }
+
+        /* Başlık özel stilleri */
+        .panel-header {
+            margin-bottom: 8px;
+            padding-left: 10px;
+            padding-right: 10px;
+            font-size: 13px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .ph-left {
+            grid-column: 1;
+        }
+
+        /* SATIR STİLLERİ */
+        .panel-item {
             margin-bottom: 6px;
             border-radius: 8px;
             background: #f9fafb;
@@ -52,11 +73,14 @@
             cursor: grab;
             transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
         }
+
         .panel-left {
+            grid-column: 1;
             display: flex;
             align-items: center;
             gap: 8px;
         }
+
         .drag-handle {
             font-size: 18px;
             user-select: none;
@@ -71,17 +95,40 @@
             font-size: 11px;
             color: #9ca3af;
         }
-        .panel-right {
+
+        /* SAĞ KOLONLAR (HEM BAŞLIKTA HEM SATIRDA AYNI KULLANILIYOR) */
+        .col-visible {
+            grid-column: 2;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
-        }
-        .panel-right label {
-            display: flex;
-            align-items: center;
+            justify-content: flex-start;  /* hepsi sola hizalı */
+            padding-left: 8px;           /* aynı x noktasından başlasınlar */
             gap: 4px;
-            cursor: pointer;
+        }
+
+        .col-default {
+            grid-column: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ph-default-label {
+            font-size: 13px;
+        }
+
+        .ph-visible-label {
+            font-size: 13px;
+        }
+
+        /* Checkbox ve radiolar */
+        .panel-enabled-checkbox,
+        .panel-default-radio,
+        #toggleAllVisible {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            vertical-align: middle;
         }
 
         /* Drag sırasında SortableJS’in eklediği sınıflara stil */
@@ -154,26 +201,20 @@
                 margin: 8px;
                 padding: 12px;
             }
+            .panel-header,
             .panel-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-            }
-            .panel-right {
-                align-self: stretch;
-                justify-content: flex-end;
+                grid-template-columns: minmax(0, 1fr) 60px 110px;
             }
         }
     </style>
 </head>
 <body>
 
-
 <div class="page">
 
-	<button id="closeConfigBtn" 
+    <button id="closeConfigBtn"
         style="
-            position: absolute;   /* fixed yerine absolute */
+            position: absolute;
             top: 10px;
             right: 10px;
             z-index: 10;
@@ -192,6 +233,20 @@
     <div class="subtitle">
         Sol panelde hangi pencerelerin görüneceğini ve sırasını buradan belirleyebilirsiniz.
         <div id="statusBadge"></div>
+    </div>
+
+    <!-- ÜST BAŞLIK: GRID + AYNI KOLONLAR -->
+    <div class="panel-header">
+        <div class="ph-left">Panel</div>
+
+        <div class="col-visible">
+            <input type="checkbox" id="toggleAllVisible">
+            <span class="ph-visible-label">Görünsün</span>
+        </div>
+
+        <div class="col-default">
+            <span class="ph-default-label">Açılışta ilk göster</span>
+        </div>
     </div>
 
     <ul id="panelList" class="panel-list">
@@ -331,34 +386,44 @@ function renderList(config) {
         li.className = 'panel-item';
         li.dataset.id = item.id;
 
-li.innerHTML = `
-    <div class="panel-left">
-        <span class="drag-handle" title="Sürükle">☰</span>
-        <div>
-            <div class="panel-title">${panelDef.title}</div>
-            <div class="panel-key">${panelDef.id}</div>
-        </div>
-    </div>
-    <div class="panel-right">
-        <label>
-            <input type="checkbox" class="panel-enabled-checkbox" ${item.enabled ? 'checked' : ''}>
-            Görünsün
-        </label>
-        <label>
-            <input
-                type="radio"
-                name="defaultPanel"
-                class="panel-default-radio"
-                ${item.enabled ? '' : 'disabled'}
-                ${item.isDefault && item.enabled ? 'checked' : ''}
-            >
-            Açılışta ilk göster
-        </label>
-    </div>
-`;
+        const visId = 'visible-' + item.id;
+        const defId = 'default-' + item.id;
+
+        li.innerHTML = `
+            <div class="panel-left">
+                <span class="drag-handle" title="Sürükle">☰</span>
+                <div>
+                    <div class="panel-title">${panelDef.title}</div>
+                    <div class="panel-key">${panelDef.id}</div>
+                </div>
+            </div>
+
+            <div class="col-visible">
+                <input type="checkbox"
+                       id="${visId}"
+                       class="panel-enabled-checkbox"
+                       ${item.enabled ? 'checked' : ''}>
+            </div>
+
+            <div class="col-default">
+                <input type="radio"
+                       id="${defId}"
+                       name="defaultPanel"
+                       class="panel-default-radio"
+                       ${item.enabled ? '' : 'disabled'}
+                       ${item.isDefault && item.enabled ? 'checked' : ''}>
+            </div>
+        `;
 
         panelListEl.appendChild(li);
     });
+
+    // Master checkbox güncelle
+    const master = document.getElementById('toggleAllVisible');
+    if (master) {
+        const anyOff = config.some(c => !c.enabled);
+        master.checked = !anyOff;
+    }
 
     initSortable();
     attachConfigInteractions();
@@ -366,6 +431,7 @@ li.innerHTML = `
 
 function attachConfigInteractions() {
     const items = panelListEl.querySelectorAll('.panel-item');
+    const masterVisible = document.getElementById('toggleAllVisible');
 
     function getCurrentDefaultRadio() {
         return panelListEl.querySelector('.panel-default-radio:checked');
@@ -374,53 +440,66 @@ function attachConfigInteractions() {
     function ensureOneDefaultRadio() {
         if (getCurrentDefaultRadio()) return;
 
-        const firstEnabledLi = Array.from(items).find(li => {
+        const firstEnabled = Array.from(items).find(li => {
             const cb = li.querySelector('.panel-enabled-checkbox');
             return cb && cb.checked;
         });
-        if (firstEnabledLi) {
-            const r = firstEnabledLi.querySelector('.panel-default-radio');
-            if (r) {
-                r.disabled = false;
-                r.checked = true;
-            }
+        if (firstEnabled) {
+            const r = firstEnabled.querySelector('.panel-default-radio');
+            r.disabled = false;
+            r.checked = true;
         }
     }
 
     items.forEach(li => {
-        const checkbox = li.querySelector('.panel-enabled-checkbox');
-        const radio    = li.querySelector('.panel-default-radio');
+        const cb = li.querySelector('.panel-enabled-checkbox');
+        const rb = li.querySelector('.panel-default-radio');
 
-        if (!checkbox || !radio) return;
+        if (!cb || !rb) return;
 
-        // Görünsün işareti değiştiğinde
-        checkbox.addEventListener('change', () => {
-            if (!checkbox.checked) {
-                // Görünmesin olduysa radio’yu kapat + disable
-                radio.checked = false;
-                radio.disabled = true;
+        cb.addEventListener('change', () => {
+            if (!cb.checked) {
+                rb.checked = false;
+                rb.disabled = true;
                 ensureOneDefaultRadio();
             } else {
-                // Yeniden görünür olduysa radio’yu tekrar kullanılabilir yap
-                radio.disabled = false;
-                // Eğer hiç default seçili yoksa bunu default yap
-                if (!getCurrentDefaultRadio()) {
-                    radio.checked = true;
-                }
+                rb.disabled = false;
+                if (!getCurrentDefaultRadio()) rb.checked = true;
+            }
+
+            // master'ı güncelle
+            if (masterVisible) {
+                const allChecked = Array.from(items).every(li => {
+                    const c = li.querySelector('.panel-enabled-checkbox');
+                    return c && c.checked;
+                });
+                masterVisible.checked = allChecked;
             }
         });
 
-        // Default radio seçilince diğerlerini kaldır
-        radio.addEventListener('change', () => {
-            if (radio.checked) {
-                panelListEl.querySelectorAll('.panel-default-radio').forEach(r => {
-                    if (r !== radio) r.checked = false;
+        rb.addEventListener('change', () => {
+            if (rb.checked) {
+                items.forEach(o => {
+                    const ort = o.querySelector('.panel-default-radio');
+                    if (ort !== rb) ort.checked = false;
                 });
             }
         });
     });
-}
 
+    if (masterVisible) {
+        masterVisible.addEventListener('change', () => {
+            const check = masterVisible.checked;
+            items.forEach(li => {
+                const cb = li.querySelector('.panel-enabled-checkbox');
+                if (cb) {
+                    cb.checked = check;
+                    cb.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    }
+}
 
 /** Mevcut listedeki sırayı + checkbox durumlarını config’e çevir */
 function readConfigFromDOM() {
@@ -482,11 +561,10 @@ if (saveBtn) {
         const newConfig = readConfigFromDOM();
         saveConfig(newConfig);
 
-// 300ms bekleyip geri dönüyoruz (görsel olarak “kaydedildi”'nin görünmesi için)
-    setTimeout(() => {
-        window.location.href = 'dr_gemini3.html';
-    }, 300);
-
+        // 300ms sonra ana sayfaya dön
+        setTimeout(() => {
+            window.location.href = 'dr_gemini3.html';
+        }, 300);
     });
 }
 
@@ -506,8 +584,6 @@ if (closeConfigBtn) {
         window.location.href = 'dr_gemini3.html';
     });
 }
-
-
 </script>
 </body>
 </html>
