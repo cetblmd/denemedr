@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hasta Bilgisi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet"
+          href="https://kendo.cdn.telerik.com/2024.1.319/styles/kendo.default-v2.min.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2024.1.319/js/kendo.all.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 4px;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: transparent;
+        }
+
+        #hastaBilgisiWrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            position: relative; /* Özelleştir butonunu göreceli sabitlemek için */
+        }
+
+        .hb-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            padding: 8px 10px;
+        }
+
+        .hb-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin: 0;
+            color: #0f172a;
+        }
+
+        .hb-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px 12px;
+        }
+
+        .hb-field {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .hb-label {
+            font-size: 12px;
+            color: #374151;
+        }
+
+        .k-textbox,
+        .k-input-inner {
+            font-size: 13px;
+            color: #111827;
+        }
+
+        input[readonly],
+        .k-textbox[readonly] {
+            background-color: #f9fafb;
+        }
+
+        /* ÜST KISIM: FOTO + BAŞLIK */
+        .hb-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Artık içinde buton yok, sola yasla */
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .hb-header-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .hb-photo {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 1px solid #d1d5db;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .hb-photo svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        .hb-header-text-main {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .hb-header-text-sub {
+            font-size: 11px;
+            color: #4b5563;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Özelleştir butonu (global, sağ üstte sabit) */
+        .hb-settings-btn {
+            border: none;
+            background: transparent;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #4b5563;
+        }
+
+        .hb-settings-btn:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .hb-settings-btn:active {
+            background: #d1d5db;
+        }
+
+        .hb-settings-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .hb-settings-btn-floating {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            z-index: 20;
+            background: #ffffffee;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+        }
+
+        /* GRUP BAŞLIKLARI – açılır/kapanır */
+        .hb-section-header {
+            margin-top: 4px;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .hb-section-header:hover .hb-title {
+            color: #0b3c61;
+        }
+
+        .hb-section-icon {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            transition: transform 0.15s ease;
+        }
+
+        .hb-section-header[data-open="false"] .hb-section-icon {
+            transform: rotate(-90deg);
+        }
+
+        .hb-section-content {
+            margin-top: 6px;
+        }
+
+        .hb-section-content[data-open="false"] {
+            display: none;
+        }
+
+        /* Tıbbi özet kutusu – HTML destekli */
+        .hb-summary-box {
+            font-size: 13.5px;     /* JS ile override edilecek */
+            line-height: 1.52;
+            color: #0f172a;
+            font-weight: 430;
+            background: #f9fafb;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            padding: 8px 10px;
+        }
+
+        .hb-summary-box strong {
+            display: block;
+            margin-top: 4px;
+            margin-bottom: 2px;
+        }
+
+        /* Yazı boyutu +/- kontrolü */
+        .hb-summary-controls {
+            display: flex;
+            gap: 4px;
+            margin-left: 8px; /* Başlığın hemen sağında hafif boşluk */
+        }
+
+        .hb-font-btn {
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border-radius: 999px;
+            border: 1px solid #d1d5db;
+            background: #f3f4f6;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hb-font-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .hb-font-btn:active {
+            background: #d1d5db;
+        }
+
+        @media (max-width: 1024px) {
+            .hb-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 2px;
+            }
+
+            .hb-card {
+                padding: 6px 8px;
+            }
+
+            .hb-row {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .hb-header {
+                align-items: flex-start;
+            }
+
+            /* Mobilde başlık ve +/- satırı alta taşı, sola hizala */
+            .hb-section-header {
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+
+            .hb-summary-controls {
+                order: 3;
+                margin-top: 4px;
+                margin-left: 22px; /* Başlığın biraz altında/sağında devam etsin */
+            }
+
+            .hb-settings-btn-floating {
+                top: 2px;
+                right: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="hastaBilgisiWrapper">
+
+    <!-- Sağ üstte sabit Özelleştir butonu -->
+    <button id="hbSettingsBtn"
+            class="hb-settings-btn hb-settings-btn-floating"
+            type="button"
+            title="Özelleştir"
+            aria-label="Özelleştir">
+        <span class="hb-settings-icon">⚙️</span>
+    </button>
+
+    <!-- KİMLİK + PROTOKOL BİLGİLERİ GRUBU -->
+    <div class="hb-card" id="hbSectionKimlik">
+        <div class="hb-header">
+            <div class="hb-header-main">
+                <!-- Inline hasta ikonu -->
+                <div class="hb-photo">
+                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#0f766e"/>
+                                <stop offset="100%" stop-color="#0369a1"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="32" cy="32" r="32" fill="url(#hg)"/>
+                        <path d="M16 52c2.5-8.5 8-13 16-13s13.5 4.5 16 13" fill="#e5e7eb" opacity="0.9"/>
+                        <circle cx="32" cy="26" r="9" fill="#f9fafb"/>
+                    </svg>
+                </div>
+                <div>
+                    <div id="hbHeaderAdSoyad" class="hb-header-text-main">Hasta Adı</div>
+                    <div id="hbHeaderAlt" class="hb-header-text-sub"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hb-section">
+            <!-- Açılışta JS ile kapat/aç yapılacak -->
+            <div class="hb-section-header" data-section="kimlik" data-open="false">
+                <span class="hb-section-icon">▾</span>
+                <h2 class="hb-title">Kimlik ve Protokol Bilgileri</h2>
+            </div>
+
+            <div class="hb-section-content" id="hbSectionKimlikContent" data-open="false">
+                <div class="hb-row">
+                    <!-- 1. satır -->
+                    <div class="hb-field">
+                        <span class="hb-label">Ad Soyad</span>
+                        <input id="hbAdSoyad" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Cinsiyet</span>
+                        <input id="hbCinsiyet" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Sigorta Türü</span>
+                        <input id="hbSigortaTuru" />
+                    </div>
+
+                    <!-- 2. satır -->
+                    <div class="hb-field">
+                        <span class="hb-label">T.C. Kimlik No</span>
+                        <input id="hbTcNo" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Medeni Hali</span>
+                        <input id="hbMedeniHal" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Protokol No</span>
+                        <input id="hbProtokolNo" />
+                    </div>
+
+                    <!-- 3. satır -->
+                    <div class="hb-field">
+                        <span class="hb-label">Doğum Tarihi</span>
+                        <input id="hbDogumTarihi" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Yaş</span>
+                        <input id="hbYas" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Dosya No</span>
+                        <input id="hbDosyaNo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HASTA TIBBİ ÖZETİ GRUBU -->
+    <div class="hb-card" id="hbSectionTibbiOzet">
+        <div class="hb-section">
+            <div class="hb-section-header" data-section="tibbi" data-open="true">
+                <span class="hb-section-icon">▾</span>
+                <h2 class="hb-title">Hasta Tıbbi Özeti</h2>
+                <div class="hb-summary-controls">
+                    <button type="button"
+                            id="hbFontSmaller"
+                            class="hb-font-btn"
+                            title="Yazıyı küçült">−</button>
+                    <button type="button"
+                            id="hbFontBigger"
+                            class="hb-font-btn"
+                            title="Yazıyı büyüt">+</button>
+                </div>
+            </div>
+
+            <div class="hb-section-content" id="hbSectionTibbiOzetContent" data-open="true">
+                <div class="hb-field">
+                    <div id="hbTibbiOzetText" class="hb-summary-box">
+                        Özet hazırlanıyor...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İLETİŞİM BİLGİLERİ GRUBU -->
+    <div class="hb-card" id="hbSectionIletisim">
+        <div class="hb-section">
+            <div class="hb-section-header" data-section="iletisim" data-open="true">
+                <span class="hb-section-icon">▾</span>
+                <h2 class="hb-title">İletişim Bilgileri</h2>
+            </div>
+
+            <div class="hb-section-content" id="hbSectionIletisimContent" data-open="true">
+                <div class="hb-row">
+                    <div class="hb-field">
+                        <span class="hb-label">Cep Telefonu</span>
+                        <input id="hbCepTel" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Ev / Diğer Telefon</span>
+                        <input id="hbEvTel" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">E-posta</span>
+                        <input id="hbEmail" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Adres (Özet)</span>
+                        <input id="hbAdresOzet" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Kurumu</span>
+                        <input id="hbKurum" />
+                    </div>
+
+                    <div class="hb-field">
+                        <span class="hb-label">Kurumsal Sicil No</span>
+                        <input id="hbKurumSicil" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // === AYARLARLA ENTEGRE KISIM ===
+    const HB_STORAGE_KEY = "hbHastaBilgisiAyarlar";
+
+    function loadHastaBilgisiConfig() {
+        try {
+            const raw = localStorage.getItem(HB_STORAGE_KEY);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed) return null;
+
+            // Font
+            const fontFamily = parsed.fontFamily ||
+                'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+            let fontSize = parsed.fontSize || 13.5;
+            if (fontSize < 11) fontSize = 11;
+            if (fontSize > 24) fontSize = 24;
+
+            // Gruplar
+            const baseGroups = [
+                { id: "kimlik",   title: "Kimlik ve Protokol Bilgileri" },
+                { id: "tibbi",    title: "Hasta Tıbbi Özeti" },
+                { id: "iletisim", title: "İletişim Bilgileri" }
+            ];
+
+            let groups = [];
+            if (Array.isArray(parsed.groups)) {
+                parsed.groups.forEach(g => {
+                    if (!g || !g.id) return;
+                    const meta = baseGroups.find(b => b.id === g.id);
+                    if (!meta) return;
+                    groups.push({
+                        id: g.id,
+                        title: meta.title,
+                        visible: g.visible !== false,
+                        isDefault: !!g.isDefault
+                    });
+                });
+            }
+
+            // Eksik grup varsa ekle
+            const existingIds = new Set(groups.map(g => g.id));
+            baseGroups.forEach(bg => {
+                if (!existingIds.has(bg.id)) {
+                    groups.push({
+                        id: bg.id,
+                        title: bg.title,
+                        visible: true,
+                        isDefault: bg.id === "tibbi"
+                    });
+                }
+            });
+
+            // En az bir görünür default olsun
+            if (!groups.some(g => g.visible && g.isDefault)) {
+                const firstVisible = groups.find(g => g.visible);
+                if (firstVisible) firstVisible.isDefault = true;
+            }
+
+            return { fontFamily, fontSize, groups };
+        } catch (e) {
+            console.warn("HastaBilgisi ayarları okunamadı:", e);
+            return null;
+        }
+    }
+
+    function applyFontConfig(config) {
+        // Global değişkenleri config'e göre güncelle
+        hbSummaryBaseSize = config.fontSize;
+        hbCurrentSize     = hbSummaryBaseSize;
+
+        $("#hbTibbiOzetText")
+            .css("font-size", hbSummaryBaseSize + "px")
+            .css("font-family", config.fontFamily);
+    }
+
+    function applyGroupConfig(config) {
+        const map = {
+            kimlik:   "#hbSectionKimlik",
+            tibbi:    "#hbSectionTibbiOzet",
+            iletisim: "#hbSectionIletisim"
+        };
+
+        const $wrapper = $("#hastaBilgisiWrapper");
+
+        // Sıralama: gruplar dizisinin sırasına göre kartları yeniden append et
+        config.groups.forEach(g => {
+            const sel = map[g.id];
+            if (!sel) return;
+            const $el = $(sel);
+            // görünürlük
+            $el.toggle(g.visible !== false);
+            // sıralama
+            $wrapper.append($el);
+        });
+
+        // Açılışta ilk göster: tümünü kapat, default olanı aç
+        const allSections = ["kimlik", "tibbi", "iletisim"];
+        allSections.forEach(id => setSectionOpen(id, false));
+
+        let defaultId = null;
+        const visibleFirstDefault = config.groups.find(g => g.visible && g.isDefault);
+        if (visibleFirstDefault) {
+            defaultId = visibleFirstDefault.id;
+        } else {
+            const firstVisible = config.groups.find(g => g.visible);
+            defaultId = firstVisible ? firstVisible.id : null;
+        }
+
+        if (defaultId) {
+            setSectionOpen(defaultId, true);
+        }
+    }
+
+    function setSectionOpen(sectionId, isOpen) {
+        const $header = $('.hb-section-header[data-section="' + sectionId + '"]');
+        let targetId = null;
+        if (sectionId === "kimlik")   targetId = "#hbSectionKimlikContent";
+        if (sectionId === "tibbi")    targetId = "#hbSectionTibbiOzetContent";
+        if (sectionId === "iletisim") targetId = "#hbSectionIletisimContent";
+
+        $header.attr("data-open", isOpen ? "true" : "false");
+        if (targetId) {
+            $(targetId).attr("data-open", isOpen ? "true" : "false");
+        }
+    }
+
+    // === Yazı boyutu kontrol değişkenleri (config ile override edilecek) ===
+    var hbSummaryBaseSize = 13.5;
+    var hbSummaryStep     = 1.5;
+    var hbSummaryMin      = 11;
+    var hbSummaryMax      = 22;
+    var hbCurrentSize     = hbSummaryBaseSize;
+
+    function applySummaryFontSize() {
+        $("#hbTibbiOzetText").css("font-size", hbCurrentSize + "px");
+    }
+
+    $(document).ready(function () {
+        // Ayarları yükle
+        const hbConfig = loadHastaBilgisiConfig();
+        if (hbConfig) {
+            applyFontConfig(hbConfig);
+        } else {
+            // Ayar yoksa default font boyutunu uygula
+            applySummaryFontSize();
+        }
+
+        // Tüm text alanlarını Kendo TextBox yapalım (read-only)
+        if (window.kendo && kendo.ui && kendo.ui.TextBox) {
+            $("#hbTcNo").kendoTextBox({ enable: false });
+            $("#hbDosyaNo").kendoTextBox({ enable: false });
+            $("#hbProtokolNo").kendoTextBox({ enable: false });
+            $("#hbAdSoyad").kendoTextBox({ enable: false });
+            $("#hbCinsiyet").kendoTextBox({ enable: false });
+            $("#hbYas").kendoTextBox({ enable: false });
+            $("#hbDogumTarihi").kendoTextBox({ enable: false });
+            $("#hbMedeniHal").kendoTextBox({ enable: false });
+            $("#hbSigortaTuru").kendoTextBox({ enable: false });
+
+            $("#hbCepTel").kendoTextBox({ enable: false });
+            $("#hbEvTel").kendoTextBox({ enable: false });
+            $("#hbEmail").kendoTextBox({ enable: false });
+            $("#hbAdresOzet").kendoTextBox({ enable: false });
+            $("#hbKurum").kendoTextBox({ enable: false });
+            $("#hbKurumSicil").kendoTextBox({ enable: false });
+        }
+
+        // Yazı boyutu +/- butonları
+        $("#hbFontSmaller").on("click", function (e) {
+            e.stopPropagation();
+            if (hbCurrentSize > hbSummaryMin) {
+                hbCurrentSize -= hbSummaryStep;
+                applySummaryFontSize();
+            }
+        });
+
+        $("#hbFontBigger").on("click", function (e) {
+            e.stopPropagation();
+            if (hbCurrentSize < hbSummaryMax) {
+                hbCurrentSize += hbSummaryStep;
+                applySummaryFontSize();
+            }
+        });
+
+        // Özelleştir butonu → özelleştirme sayfası
+        $("#hbSettingsBtn").on("click", function () {
+            window.location.href = "hastabilgisiozellestir.html";
+        });
+
+        // Grup başlıklarını aç/kapa yap
+        $(".hb-section-header").on("click", function () {
+            const $header = $(this);
+            const isOpen  = $header.attr("data-open") === "true";
+            const section = $header.data("section");
+
+            let targetId = null;
+            if (section === "kimlik")   targetId = "#hbSectionKimlikContent";
+            if (section === "iletisim") targetId = "#hbSectionIletisimContent";
+            if (section === "tibbi")    targetId = "#hbSectionTibbiOzetContent";
+
+            $header.attr("data-open", isOpen ? "false" : "true");
+            if (targetId) {
+                $(targetId).attr("data-open", isOpen ? "false" : "true");
+            }
+        });
+
+        // Ayarlardan gelen grup config'ini uygula (sıra, görünürlük, default açık grup)
+        if (hbConfig) {
+            applyGroupConfig(hbConfig);
+        }
+
+        // TEST: Sayfa açıldığında dummy hasta ve tıbbi özet yükle
+        loadHastaBilgisi("TEST-123");
+        loadHastaTibbiOzeti("TEST-123", "DAH"); // örnek: Dahiliye
+    });
+
+    // === SERVİS / DATA SİMÜLASYONLARI ===
+    function loadHastaBilgisi(hastaId) {
+        const hasta = fetchHastaBilgisiFromService(hastaId);
+        setHastaBilgisi(hasta);
+    }
+
+    function loadHastaTibbiOzeti(hastaId, drServisKodu) {
+        const html = fetchHastaTibbiOzetiFromAI(hastaId, drServisKodu);
+        $("#hbTibbiOzetText").html(html || "Özet bulunamadı.");
+    }
+
+    function fetchHastaBilgisiFromService(hastaId) {
+        console.log("Hasta bilgisi servise gidecek. hastaId:", hastaId);
+
+        return {
+            adSoyad: "DENEME HASTA " + (hastaId || ""),
+            tcNo: "12345678901",
+            dosyaNo: "H-2025-001234",
+            protokolNo: "P-2025-000987",
+            cinsiyet: "Erkek",
+            yas: "42",
+            dogumTarihi: "1983-05-15",
+            medeniHal: "Evli",
+            sigortaTuru: "SGK",
+            cepTel: "0505 000 00 00",
+            evTel: "0212 000 00 00",
+            email: "hasta" + (hastaId || "1") + "@example.com",
+            adresOzet: "İstanbul / Türkiye",
+            kurum: "Özel Kurum",
+            kurumSicil: "KRM-00123"
+        };
+    }
+
+    function fetchHastaTibbiOzetiFromAI(hastaId, drServisKodu) {
+        console.log("Tıbbi özet için AI servisine gidecek. hastaId:", hastaId, "drServis:", drServisKodu);
+
+        return (
+            "<strong>Şikayet ve genel klinik durum:</strong> " +
+            "Son başvurularda eforla artan göğüs ağrısı, zaman zaman istirahatte de hissedilen çarpıntı ve nefes darlığı ön planda. " +
+            "Aralıklı baş ağrısı ve belirgin yorgunluk tarifleniyor. Evde yapılan kan basıncı ölçümlerinde dönem dönem yüksek değerler kaydedilmiş.<br><br>" +
+
+            "<strong>Geçmiş tıbbi öykü ve ameliyatlar:</strong> " +
+            "Yaklaşık 8 yıllık hipertansiyon ve 5 yıllık tip 2 diyabet öyküsü mevcut. " +
+            "Beş yıl önce laparoskopik kolesistektomi, iki yıl önce diz artroskopisi uygulanmış; ameliyat sonrası anlamlı komplikasyon bildirilmemiş. " +
+            "Bilinen ilaç alerjisi yok.<br><br>" +
+
+            "<strong>Laboratuvar bulguları (öne çıkanlar):</strong><br>" +
+            "Hb: 11,2 g/dL (hafif anemi, ↓)<br>" +
+            "LDL: 165 mg/dL (↑)<br>" +
+            "Trigliserid: 240 mg/dL (↑)<br>" +
+            "HbA1c: %7,8 (↑, glisemik kontrol suboptimal)<br>" +
+            "Kreatinin: 1,1 mg/dL (normal)<br>" +
+            "eGFR: hafif azalmış<br>" +
+            "Karaciğer enzimleri ve CRP normal sınırlarda.<br><br>" +
+
+            "<strong>Sürekli kullandığı ilaçlar:</strong> " +
+            "ACE inhibitörü/ARB + tiyazid kombinasyonu, metformin bazlı oral antidiyabetik ve statin tedavisi mevcut. " +
+            "Zaman zaman analjezik kullanım öyküsü var; düzensiz dönemlerde ek olarak PPI başlanmış. " +
+            "İlaç uyumunun ve yaşam tarzı önerilerinin zaman zaman aksadığı not edilmiş.<br><br>" +
+
+            "<strong>Aile tıbbi öyküsü:</strong> " +
+            "Birinci derece akrabalarda erken yaşta koroner arter hastalığı ve hipertansiyon öyküsü mevcut. " +
+            "Anne tarafında diyabet, baba tarafında hiperlipidemi ve inme öyküsü bildiriliyor.<br><br>" +
+
+            "<strong>Bu vizitte odaklanılması önerilen noktalar:</strong> " +
+            "Eforla artan göğüs ağrısı nedeniyle ayrıntılı kardiyak değerlendirme yapılması (gerektiğinde efor testi ve/veya ileri görüntüleme). " +
+            "HT, lipit profili ve diyabet kontrolünün birlikte ele alınması; ilaç uyumu, tuz kısıtlaması, kilo kontrolü ve düzenli egzersiz gibi " +
+            "yaşam tarzı değişikliklerinin hastayla tekrar değerlendirilmesi önerilir."
+        );
+    }
+
+    function setHastaBilgisi(h) {
+        if (!h) return;
+
+        // Başlık metinleri
+        $("#hbHeaderAdSoyad").text(h.adSoyad || "-");
+
+        const altParts = [];
+        if (h.yas)        altParts.push(h.yas + " yaş");
+        if (h.cinsiyet)   altParts.push(h.cinsiyet);
+        if (h.sigortaTuru)altParts.push(h.sigortaTuru);
+        $("#hbHeaderAlt").text(altParts.join(" • "));
+
+        // Detay alanlar
+        setTextValue("#hbAdSoyad", h.adSoyad);
+        setTextValue("#hbTcNo", h.tcNo);
+        setTextValue("#hbDosyaNo", h.dosyaNo);
+        setTextValue("#hbProtokolNo", h.protokolNo);
+        setTextValue("#hbCinsiyet", h.cinsiyet);
+        setTextValue("#hbYas", h.yas);
+        setTextValue("#hbMedeniHal", h.medeniHal);
+        setTextValue("#hbSigortaTuru", h.sigortaTuru);
+
+        setTextValue("#hbCepTel", h.cepTel);
+        setTextValue("#hbEvTel", h.evTel);
+        setTextValue("#hbEmail", h.email);
+        setTextValue("#hbAdresOzet", h.adresOzet);
+        setTextValue("#hbKurum", h.kurum);
+        setTextValue("#hbKurumSicil", h.kurumSicil);
+
+        // Doğum tarihi – sadece text
+        let dogumText = "";
+        if (h.dogumTarihi) {
+            let d = h.dogumTarihi;
+            if (!(d instanceof Date)) {
+                d = new Date(h.dogumTarihi);
+            }
+            if (!isNaN(d.getTime())) {
+                const gun = ("0" + d.getDate()).slice(-2);
+                const ay  = ("0" + (d.getMonth() + 1)).slice(-2);
+                const yil = d.getFullYear();
+                dogumText = gun + "." + ay + "." + yil;
+            } else {
+                dogumText = h.dogumTarihi;
+            }
+        }
+        setTextValue("#hbDogumTarihi", dogumText);
+    }
+
+    // Hem Kendo TextBox hem normal input için ortak helper
+    function setTextValue(selector, value) {
+        const $el = $(selector);
+        const txt = value || "";
+        const widget = $el.data("kendoTextBox");
+        if (widget && widget.value) {
+            widget.value(txt);
+        } else {
+            $el.val(txt);
+        }
+    }
+</script>
+
+</body>
+</html>
