@@ -459,65 +459,79 @@
     // === AYARLARLA ENTEGRE KISIM ===
     const HB_STORAGE_KEY = "hbHastaBilgisiAyarlar";
 
+    // Grup meta bilgileri
+    const HB_BASE_GROUPS = [
+        { id: "kimlik",   title: "Kimlik ve Protokol Bilgileri" },
+        { id: "tibbi",    title: "Hasta Tıbbi Özeti" },
+        { id: "iletisim", title: "İletişim Bilgileri" }
+    ];
+
+    // Varsayılan konfig
+    const HB_DEFAULT_CONFIG = {
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontSize: 13.5,
+        groups: [
+            { id: "kimlik",   title: "Kimlik ve Protokol Bilgileri", visible: true,  isOpen: false },
+            { id: "tibbi",    title: "Hasta Tıbbi Özeti",            visible: true,  isOpen: true  },
+            { id: "iletisim", title: "İletişim Bilgileri",           visible: true,  isOpen: true  }
+        ]
+    };
+
     function loadHastaBilgisiConfig() {
         try {
             const raw = localStorage.getItem(HB_STORAGE_KEY);
-            if (!raw) return null;
-            const parsed = JSON.parse(raw);
-            if (!parsed) return null;
+            if (!raw) {
+                return HB_DEFAULT_CONFIG;
+            }
 
-            // Font
-            const fontFamily = parsed.fontFamily ||
-                'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-            let fontSize = parsed.fontSize || 13.5;
+            const parsed = JSON.parse(raw) || {};
+
+            const fontFamily = parsed.fontFamily || HB_DEFAULT_CONFIG.fontFamily;
+            let fontSize = parsed.fontSize || HB_DEFAULT_CONFIG.fontSize;
             if (fontSize < 11) fontSize = 11;
             if (fontSize > 24) fontSize = 24;
 
-            // Gruplar
-            const baseGroups = [
-                { id: "kimlik",   title: "Kimlik ve Protokol Bilgileri" },
-                { id: "tibbi",    title: "Hasta Tıbbi Özeti" },
-                { id: "iletisim", title: "İletişim Bilgileri" }
-            ];
-
             let groups = [];
+
             if (Array.isArray(parsed.groups)) {
                 parsed.groups.forEach(g => {
                     if (!g || !g.id) return;
-                    const meta = baseGroups.find(b => b.id === g.id);
+                    const meta = HB_BASE_GROUPS.find(b => b.id === g.id);
                     if (!meta) return;
+
+                    const isOpen = !!(
+                        g.isOpen ||
+                        g.acikDurum ||
+                        g.open ||
+                        g.isDefault
+                    );
+
                     groups.push({
                         id: g.id,
                         title: meta.title,
                         visible: g.visible !== false,
-                        isDefault: !!g.isDefault
+                        isOpen: isOpen
                     });
                 });
             }
 
-            // Eksik grup varsa ekle
             const existingIds = new Set(groups.map(g => g.id));
-            baseGroups.forEach(bg => {
+            HB_BASE_GROUPS.forEach(bg => {
                 if (!existingIds.has(bg.id)) {
+                    const def = HB_DEFAULT_CONFIG.groups.find(d => d.id === bg.id);
                     groups.push({
                         id: bg.id,
                         title: bg.title,
-                        visible: true,
-                        isDefault: bg.id === "tibbi"
+                        visible: def ? def.visible : true,
+                        isOpen: def ? def.isOpen : false
                     });
                 }
             });
 
-            // En az bir görünür default olsun
-            if (!groups.some(g => g.visible && g.isDefault)) {
-                const firstVisible = groups.find(g => g.visible);
-                if (firstVisible) firstVisible.isDefault = true;
-            }
-
             return { fontFamily, fontSize, groups };
         } catch (e) {
             console.warn("HastaBilgisi ayarları okunamadı:", e);
-            return null;
+            return HB_DEFAULT_CONFIG;
         }
     }
 
@@ -540,7 +554,7 @@
 
         const $wrapper = $("#hastaBilgisiWrapper");
 
-        // Sıralama: gruplar dizisinin sırasına göre kartları yeniden append et
+        // Sıralama + görünürlük
         config.groups.forEach(g => {
             const sel = map[g.id];
             if (!sel) return;
@@ -551,22 +565,10 @@
             $wrapper.append($el);
         });
 
-        // Açılışta ilk göster: tümünü kapat, default olanı aç
-        const allSections = ["kimlik", "tibbi", "iletisim"];
-        allSections.forEach(id => setSectionOpen(id, false));
-
-        let defaultId = null;
-        const visibleFirstDefault = config.groups.find(g => g.visible && g.isDefault);
-        if (visibleFirstDefault) {
-            defaultId = visibleFirstDefault.id;
-        } else {
-            const firstVisible = config.groups.find(g => g.visible);
-            defaultId = firstVisible ? firstVisible.id : null;
-        }
-
-        if (defaultId) {
-            setSectionOpen(defaultId, true);
-        }
+        // Açık / kapalı durumu: her grup için ayrı
+        config.groups.forEach(g => {
+            setSectionOpen(g.id, g.isOpen !== false);
+        });
     }
 
     function setSectionOpen(sectionId, isOpen) {
@@ -662,7 +664,7 @@
             }
         });
 
-        // Ayarlardan gelen grup config'ini uygula (sıra, görünürlük, default açık grup)
+        // Ayarlardan gelen grup config'ini uygula (sıra, görünürlük, açık gruplar)
         if (hbConfig) {
             applyGroupConfig(hbConfig);
         }

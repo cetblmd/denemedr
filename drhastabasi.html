@@ -2318,31 +2318,43 @@ if (mainWrapper) {
 // Hasta bilgisi iframe yüksekliğini viewport değişince güncelle
     resizeHastaBilgisiFrame();
 
-// 🔹 İlk açılışta config'teki "Açık Durum" pencerelerine,
-// sanki sol taraftaki AÇ ikonuna basılmış gibi davran
-
-/*CET*/
-initialViewApplied = true;
-
+// 🔹 İlk açılışta config'teki "Açılışta açık" pencerelerini kullan
+// 🔹 PC / Tablet'te ilk açık pencereyi sağa al ve solda kapat
 if (!initialViewApplied) {
     const openIds = getOpenPanelIdsFromConfig();   // acikDurum=true + enabled olanlar
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-    if (openIds.length > 0) {
-        const solPanelEl = document.getElementById('solPanel');
+    // Sağ panel için ilk açılacak pencere (sadece gerçekten AÇIK olanlardan)
+    let firstId = openIds.length > 0 ? openIds[0] : null;
+    const firstCard = firstId ? document.getElementById(firstId) : null;
 
-        if (solPanelEl && typeof openCardInRightPanel === 'function') {
-            // openIds: config sırasına göre geliyor
-            // Her açık pencere için aç ikonuna basılmış gibi davran
-            openIds.forEach(id => {
-                const card = document.getElementById(id);
-                if (card && card.parentElement === solPanelEl) {
-                    openCardInRightPanel(card);
+    if (firstCard) {
+        if (!isMobile) {
+            // 🖥️ PC / Tablet: ilk açık pencereyi sağ panelde göster
+            if (typeof openCardInRightPanel === 'function') {
+                openCardInRightPanel(firstCard);
+            }
+
+            // Aynı pencereyi sol panelde kapat (sanki sadece büyüteçle sağa alınmış gibi)
+            if (solPanel && firstCard.parentElement === solPanel) {
+                firstCard.classList.remove('full', 'active', 'expanded');
+                firstCard.classList.add('collapsed');
+
+                const toggleBtn = firstCard.querySelector('.kutu-baslik .kutu-toggle-btn');
+                if (toggleBtn) {
+                    toggleBtn.textContent = '▸';
                 }
-            });
+            }
+        } else {
+            // 📱 Mobil: mevcut davranış aynen kalsın → ilk açık kart aktif
+            const solPanelEl = document.getElementById('solPanel');
+            if (solPanelEl) {
+                solPanelEl.querySelectorAll('.kutu').forEach(k => k.classList.remove('active'));
+            }
+            firstCard.classList.add('active');
         }
     }
 
-    // Hiç açık yoksa: hiçbir şey yapma, default/fallback yok
     initialViewApplied = true;
 }
 }
@@ -2370,17 +2382,42 @@ function toggleSolPanelFullContent() {
 
     solAllExpanded = !solAllExpanded;
 
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     const kutular = solPanel.querySelectorAll('.kutu');
 
     kutular.forEach(kutu => {
+        const headerEl = kutu.querySelector('.kutu-baslik');
+        const toggleBtn = headerEl ? headerEl.querySelector('.kutu-toggle-btn') : null;
+
         if (solAllExpanded) {
-            // PC/Tablet için: içerik kısaltmasını kaldırmak üzere
+            // TAM AÇ
             kutu.classList.add('full');
-            // Mobil akordiyon için: içeriği görünür yapar
-            kutu.classList.add('active');
+
+            if (isMobile) {
+                // Mobil: aktif akordeon
+                kutu.classList.add('active');
+            } else {
+                // PC/Tablet: collapsed/expanded mantığı
+                setKutuCollapsedDesktop(kutu, false); // expanded
+            }
         } else {
+            // KAPAT
             kutu.classList.remove('full');
-            kutu.classList.remove('active');
+
+            if (isMobile) {
+                kutu.classList.remove('active');
+            } else {
+                setKutuCollapsedDesktop(kutu, true); // collapsed
+            }
+        }
+
+        // Ok ikonunu güncelle
+        if (toggleBtn) {
+            const isOpen = isMobile
+                ? kutu.classList.contains('active')
+                : kutu.classList.contains('expanded');
+
+            toggleBtn.textContent = isOpen ? '▾' : '▸';
         }
     });
 
@@ -2548,7 +2585,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('storage', (e) => {
         if (e.key === 'solPanelConfig') {
             applySolPanelConfig();
-            handleResizeAndLoad(); // istersen bunu da koy; sadece görünüm tazelensin
+
+            // Özelleştir ekranından dönüldü → ilk açık pencereyi tekrar seçebilmek için sıfırla
+            initialViewApplied = false;
+            handleResizeAndLoad();
         }
     });
 });

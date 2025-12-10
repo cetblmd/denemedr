@@ -42,7 +42,7 @@
         }
 
         /* ÜST BAŞLIK VE SATIRLAR AYNI GRID YAPISINI KULLANIYOR
-           [ Görünsün ] [ Pencere adı ] [ Açık Durum ]
+           [ Görünsün ] [ Pencere adı ] [ Açılışta açık ]
         */
         .panel-header,
         .panel-item {
@@ -106,7 +106,7 @@
             gap: 4px;
         }
 
-        /* 3. kolon: Açık Durum */
+        /* 3. kolon: Açılışta açık */
         .col-default {
             grid-column: 3;
             display: flex;
@@ -246,7 +246,7 @@
         <div id="statusBadge"></div>
     </div>
 
-    <!-- ÜST BAŞLIK: Görünsün solda, ortada boş, sağda Açık Durum -->
+    <!-- ÜST BAŞLIK: Görünsün solda, ortada boş, sağda Açılışta açık -->
     <div class="panel-header">
         <div class="col-visible">
             <input type="checkbox" id="toggleAllVisible">
@@ -257,7 +257,7 @@
 
         <div class="col-default">
             <input type="checkbox" id="toggleAllOpen">
-            <span class="ph-default-label">Açık Durum</span>
+            <span class="ph-default-label">Açılışta açık</span>
         </div>
     </div>
 
@@ -269,7 +269,7 @@
         • Satırın solundaki ☰ simgesinden tutup sürükleyerek sırasını değiştirebilirsiniz
           (PC, tablet, telefon hepsinde çalışır). <br>
         • <b>Görünsün</b> işaretli olanlar sol panelde listelenir. <br>
-        • <b>Açık Durum</b> işaretli olanlar, ekran açıldığında sol panelde tam açık gelir
+        • <b>Açılışta açık</b> işaretli olanlar, ekran açıldığında sol panelde tam açık gelir
           ve içlerinden ilki sağ panele yüklenir. <br>
         • Değişiklikler tarayıcıya kayıt edilir (localStorage).
     </div>
@@ -313,7 +313,7 @@ function getDefaultConfig() {
         id: p.id,
         enabled: true,
         isDefault: index === 0,      // eski kodla uyum için
-        acikDurum: index === 0       // yeni: Açık Durum
+        acikDurum: index === 0       // yeni: Açılışta açık
     }));
 }
 
@@ -336,7 +336,7 @@ function loadConfig() {
             const acikDurum =
                 (typeof item.acikDurum !== 'undefined')
                     ? !!item.acikDurum
-                    : !!item.isDefault;   // eski datada isDefault açıktı → Açık Durum
+                    : !!item.isDefault;   // eski datada isDefault açıktı → Açılışta açık
 
             result.push({
                 id: item.id,
