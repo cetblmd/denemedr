@@ -162,25 +162,30 @@ body {
 
 /* Desktop için sol panel kart aç/kapa davranışı */
 @media (min-width: 769px) {
+
+    /* KAPALI kartlar: her şeyi gizle */
     .sol-panel .kutu.collapsed > *:not(.kutu-baslik):not(.ac-icon) {
         display: none;
         max-height: 0;
         overflow: hidden;
     }
 
-    .sol-panel .kutu.expanded > *:not(.kutu-baslik):not(.ac-icon) {
+    /* AÇIK kartlar (collapsed DEĞİLSE): mobildeki gibi full aç */
+    .sol-panel .kutu:not(.collapsed) > *:not(.kutu-baslik):not(.ac-icon) {
         display: block;
         max-height: 2000px;
         overflow: visible;
-        padding-top: 6px;
+        padding-top: 8px;
+        transition: max-height 0.5s ease-in, padding 0.5s ease-in;
     }
 
-    .sol-panel .kutu.expanded .muayene-ozet {
-        display: block;
-        -webkit-line-clamp: unset;
-        -webkit-box-orient: initial;
-        overflow: visible;
-        text-overflow: unset;
+    /* Açık kartlardaki muayene özetlerinde satır kısıtlaması olmasın */
+    .sol-panel .kutu:not(.collapsed) .muayene-ozet {
+        display: block !important;
+        -webkit-line-clamp: unset !important;
+        -webkit-box-orient: initial !important;
+        overflow: visible !important;
+        text-overflow: unset !important;
     }
 }
 
@@ -745,6 +750,7 @@ th {
     }
 }
 
+
 /* Mobil */
 @media (max-width: 768px) {
     body {
@@ -939,6 +945,9 @@ th {
         display: none !important;
     }
 }
+
+
+
 </style>
 </head>
 <body>
