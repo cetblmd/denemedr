@@ -1350,6 +1350,89 @@ function openPanelByType(partOfDataTuru) {
     }
     return false;
 }
+/* === SOL PANEL KONFİGÜRASYONU – AYAR SAYFASIYLA AYNI MANTIĞI KULLAN === */
+
+const SOL_PANEL_ALL_IDS = [
+    'panel-hasta-bilgisi',
+    'panel-muayene',
+    'panel-teshis',
+    'panel-laboratuvar',
+    'panel-radyoloji',
+    'panel-recete',
+    'panel-asi',
+    'panel-notlar',
+    'panel-randevu'
+];
+
+function loadSolPanelConfigNormalized() {
+    const STORAGE_KEY = 'solPanelConfig';
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+            // Hiç kayıt yoksa: hepsi açık, ilk panel default
+            return SOL_PANEL_ALL_IDS.map((id, index) => ({
+                id,
+                enabled: true,
+                isDefault: index === 0
+            }));
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+            return SOL_PANEL_ALL_IDS.map((id, index) => ({
+                id,
+                enabled: true,
+                isDefault: index === 0
+            }));
+        }
+
+        const knownIds = new Set(SOL_PANEL_ALL_IDS);
+        const result = [];
+
+        // Kayıtlı olanları sırayla ekle (sadece bilinen ID'ler)
+        for (const item of parsed) {
+            if (!item || typeof item.id !== 'string') continue;
+            if (!knownIds.has(item.id)) continue;
+
+            result.push({
+                id: item.id,
+                enabled: item.enabled !== false,
+                isDefault: !!item.isDefault
+            });
+        }
+
+        // Eksik ID varsa sona ekle
+        const existingIds = new Set(result.map(r => r.id));
+        for (const id of SOL_PANEL_ALL_IDS) {
+            if (!existingIds.has(id)) {
+                result.push({
+                    id,
+                    enabled: true,
+                    isDefault: false
+                });
+            }
+        }
+
+        // En az bir “default & enabled” olsun
+        let defaultIndex = result.findIndex(r => r.isDefault && r.enabled);
+        if (defaultIndex === -1) {
+            const firstEnabled = result.findIndex(r => r.enabled);
+            if (firstEnabled !== -1) {
+                result[firstEnabled].isDefault = true;
+            }
+        }
+
+        return result;
+    } catch (e) {
+        console.error('solPanelConfig yüklenirken hata:', e);
+        // Hata durumunda da tamamen boş kalmasın
+        return SOL_PANEL_ALL_IDS.map((id, index) => ({
+            id,
+            enabled: true,
+            isDefault: index === 0
+        }));
+    }
+}
 
 /* === SOL PANEL ÖZELLEŞTİRME AYARLARINI UYGULA === */
 
@@ -1365,65 +1448,93 @@ function applySolPanelConfig() {
     }
     if (!Array.isArray(config)) return;
 
-    const solPanel = document.getElementById('solPanel');
-    if (!solPanel) return;
+    const solPanelEl = document.getElementById('solPanel');
+    if (!solPanelEl) return;
+
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
     // 1) Sıraya göre kutuları yeniden diz
     config.forEach(item => {
         if (!item || !item.id) return;
         const el = document.getElementById(item.id); // Örn: panel-hasta-bilgisi
-        if (el && el.parentElement === solPanel) {
-            solPanel.appendChild(el); // sıraya göre sona ekleyerek diz
+        if (el && el.parentElement === solPanelEl) {
+            solPanelEl.appendChild(el); // sıraya göre sona ekleyerek diz
         }
     });
 
-    // 2) Görünürlük ayarlarını uygula
+    // 2) Görünürlük ayarlarını uygula (GÖRÜNSÜN sütunu)
     config.forEach(item => {
         if (!item || !item.id) return;
         const el = document.getElementById(item.id);
-        if (el && el.parentElement === solPanel) {
+        if (el && el.parentElement === solPanelEl) {
             el.style.display = item.enabled === false ? 'none' : '';
         }
     });
 
-// 3) Açık durum (full) ayarlarını uygula
-config.forEach(item => {
-    if (!item || !item.id) return;
-    const el = document.getElementById(item.id);
-    if (el && el.parentElement === solPanel) {
-        // acikDurum === true ise sol panelde o kartı tam açık başlat
-        if (item.acikDurum) {
-            el.classList.add('full');
-        } else {
-            el.classList.remove('full');
-        }
-    }
-});
+    // 3) AÇIK DURUM sütununu uygula → sol panelde kartları SANKİ AÇ DÜĞMESİNE BASILMIŞ GİBİ aç/kapa
+    const openIds = getOpenPanelIdsFromConfig();
 
+    config.forEach(item => {
+        if (!item || !item.id) return;
+        const el = document.getElementById(item.id);
+        if (!el || el.parentElement !== solPanelEl) return;
+
+        const headerEl = el.querySelector('.kutu-baslik');
+        const toggleBtn = headerEl ? headerEl.querySelector('.kutu-toggle-btn') : null;
+
+        if (openIds.includes(item.id)) {
+            // 🔵 PANEL AÇIK OLMALI
+            el.classList.add('full');   // senin tam açma isteğin
+            if (isMobile) {
+                // Mobil – mevcut çalışan yapı
+                el.classList.add('active');
+            } else {
+                // Desktop/Tablet – collapsed/expanded mantığı
+                el.classList.add('expanded');
+                el.classList.remove('collapsed');
+            }
+
+            if (toggleBtn) {
+                toggleBtn.textContent = '▾'; // ok aşağı
+            }
+        } else {
+            // 🔴 PANEL KAPALI
+            el.classList.remove('full');
+
+            if (isMobile) {
+                el.classList.remove('active');
+            } else {
+                el.classList.remove('expanded');
+                el.classList.add('collapsed');
+            }
+
+            if (toggleBtn) {
+                toggleBtn.textContent = '▸'; // ok sağa
+            }
+        }
+    });
 }
+
+
+
+/* === AÇILIŞTA SAĞ PANELE HANGİ PENCERE GELECEK? === */
 
 function getDefaultPanelIdFromConfig() {
-    const raw = localStorage.getItem('solPanelConfig');
-    if (!raw) return null;
-
-    try {
-        const cfg = JSON.parse(raw);
-        if (!Array.isArray(cfg)) return null;
-
-        // Önce isDefault && enabled olanı bul
-        let chosen = cfg.find(c => c.isDefault && c.enabled);
-        // Yoksa ilk enabled paneli al
-        if (!chosen) {
-            chosen = cfg.find(c => c.enabled);
-        }
-
-        return chosen ? chosen.id : null;  // Örn: "panel-hasta-bilgisi"
-    } catch (e) {
-        console.error('solPanelConfig parse hatası:', e);
-        return null;
+    const config = loadSolPanelConfigNormalized();
+    if (!config || !config.length) {
+        return 'panel-hasta-bilgisi';
     }
-}
 
+    // Önce hem enabled hem isDefault olanı bul
+    let chosen = config.find(c => c.enabled && c.isDefault);
+
+    // Yoksa ilk enabled olanı al
+    if (!chosen) {
+        chosen = config.find(c => c.enabled);
+    }
+
+    return chosen ? chosen.id : 'panel-hasta-bilgisi';
+}
 function getOpenPanelIdsFromConfig() {
     const raw = localStorage.getItem('solPanelConfig');
     if (!raw) return [];
@@ -1432,25 +1543,72 @@ function getOpenPanelIdsFromConfig() {
         const cfg = JSON.parse(raw);
         if (!Array.isArray(cfg)) return [];
 
-        // Config'te hiç acikDurum alanı yoksa – eski datalar için
-        const hasAcikFlag = cfg.some(c => typeof c.acikDurum !== 'undefined');
+        // Açık/kapalı bilgisi için kullanılabilecek olası alan adları:
+        // acikDurum, acik, open, isOpen
+        const hasAnyOpenFlag = cfg.some(c =>
+            c && (
+                typeof c.acikDurum !== 'undefined' ||
+                typeof c.acik      !== 'undefined' ||
+                typeof c.open      !== 'undefined' ||
+                typeof c.isOpen    !== 'undefined'
+            )
+        );
 
-        if (!hasAcikFlag) {
-            // Eski davranışa uyum: default paneli tek başına aç
-            const defId = getDefaultPanelIdFromConfig();
-            return defId ? [defId] : [];
+        // 🔴 Artık ESKİ DAVRANIŞ YOK!
+        // hasAnyOpenFlag false ise bile, hiçbir paneli "otomatik" açmıyoruz.
+        if (!hasAnyOpenFlag) {
+            return [];
         }
 
-        // enabled && acikDurum olanların id'lerini döndür
-        return cfg
-            .filter(c => c && c.enabled !== false && c.acikDurum)
-            .map(c => c.id);
+        // enabled !== false VE açık olanları topla
+        const openIds = cfg
+            .filter(c =>
+                c &&
+                c.enabled !== false && (
+                    c.acikDurum ||
+                    c.acik ||
+                    c.open ||
+                    c.isOpen
+                )
+            )
+            .map(c => c.id)
+            .filter(Boolean);
+
+        // 🔴 Kullanıcı hepsini kapattıysa bile
+        // artık "en azından default paneli aç" yapmıyoruz.
+        return openIds;
     } catch (e) {
         console.error('solPanelConfig parse hatası (acikDurum):', e);
         return [];
     }
 }
 
+function getDefaultOpenPanelIdFromConfig() {
+    const raw = localStorage.getItem('solPanelConfig');
+    if (!raw) return null;
+
+    try {
+        const cfg = JSON.parse(raw);
+        if (!Array.isArray(cfg)) return null;
+
+        const item = cfg.find(c =>
+            c &&
+            c.enabled !== false &&          // GÖRÜNSÜN = true
+            c.isDefault === true &&         // DEFAULT = true
+            (
+                c.acikDurum ||              // AÇIK DURUM sütunlarından biri
+                c.acik ||
+                c.open ||
+                c.isOpen
+            )
+        );
+
+        return item && item.id ? item.id : null;
+    } catch (e) {
+        console.error('solPanelConfig parse hatası (default açık):', e);
+        return null;
+    }
+}
 
 function handleVoiceCommand(cmd) {
     const text = cmd.toLowerCase();
@@ -2160,39 +2318,31 @@ if (mainWrapper) {
 // Hasta bilgisi iframe yüksekliğini viewport değişince güncelle
     resizeHastaBilgisiFrame();
 
-    // 🔹 İlk açılışta config'e göre default paneli aç
-// 🔹 İlk açılışta config'teki "Açık Durum" pencerelerini kullan
+// 🔹 İlk açılışta config'teki "Açık Durum" pencerelerine,
+// sanki sol taraftaki AÇ ikonuna basılmış gibi davran
+
+/*CET*/
+initialViewApplied = true;
+
 if (!initialViewApplied) {
     const openIds = getOpenPanelIdsFromConfig();   // acikDurum=true + enabled olanlar
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-    // Sağ panel için ilk açılacak pencere
-    let firstId = openIds.length > 0 ? openIds[0] : null;
+    if (openIds.length > 0) {
+        const solPanelEl = document.getElementById('solPanel');
 
-    if (!firstId) {
-        // Hiç "Açık Durum" işaretli yoksa fallback
-        firstId = 'panel-hasta-bilgisi';
-    }
-
-    const firstCard = document.getElementById(firstId);
-
-    if (firstCard) {
-        if (!isMobile) {
-            // Masaüstü / tablet: sağ panelde ilk açık pencereyi göster
-            if (typeof openCardInRightPanel === 'function') {
-                openCardInRightPanel(firstCard);
-            }
-        } else {
-            // Mobile: sadece birini aktif yapabiliriz, o yüzden ilkini aktif yapıyoruz
-            const solPanelEl = document.getElementById('solPanel');
-            if (solPanelEl) {
-                solPanelEl.querySelectorAll('.kutu').forEach(k => k.classList.remove('active'));
-            }
-            firstCard.classList.add('active');
+        if (solPanelEl && typeof openCardInRightPanel === 'function') {
+            // openIds: config sırasına göre geliyor
+            // Her açık pencere için aç ikonuna basılmış gibi davran
+            openIds.forEach(id => {
+                const card = document.getElementById(id);
+                if (card && card.parentElement === solPanelEl) {
+                    openCardInRightPanel(card);
+                }
+            });
         }
     }
 
-    // NOT: sol panelde "Açık Durum" olanlar zaten applySolPanelConfig içinde .full yapıldı
+    // Hiç açık yoksa: hiçbir şey yapma, default/fallback yok
     initialViewApplied = true;
 }
 }

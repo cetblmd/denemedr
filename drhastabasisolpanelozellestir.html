@@ -202,7 +202,6 @@
                 padding: 12px;
             }
 
-            /* Mobilde oranları isimlere daha çok alan verecek şekilde ayarla */
             .panel-header,
             .panel-item {
                 grid-template-columns: 60px minmax(0, 1.6fr) 110px;
@@ -243,7 +242,7 @@
 
     <h1>Sol Paneli Özelleştir</h1>
     <div class="subtitle">
-        Sol panelde hangi pencerelerin görüneceğini, sırasını ve açılışta hangilerinin <strong>açık</strong> olacağını buradan belirleyebilirsiniz.
+        Sol panelde hangi pencerelerin görüneceğini, sırasını ve açılışta hangilerinin açık olacağını buradan belirleyebilirsiniz.
         <div id="statusBadge"></div>
     </div>
 
@@ -254,7 +253,6 @@
             <span class="ph-visible-label">Görünsün</span>
         </div>
 
-        <!-- Orta kolon: başlık olarak bir şey istemiyoruz, boş bırakıyoruz -->
         <div></div>
 
         <div class="col-default">
@@ -268,9 +266,11 @@
     </ul>
 
     <div class="info">
-        • Satırın solundaki ☰ simgesinden tutup sürükleyerek sırasını değiştirebilirsiniz. <br>
-        • “Görünsün” işaretli olanlar sol panelde listelenir. <br>
-        • “Açık Durum” işaretli olanlar drhastabasi ekranı açıldığında <strong>açık</strong> gelir. <br>
+        • Satırın solundaki ☰ simgesinden tutup sürükleyerek sırasını değiştirebilirsiniz
+          (PC, tablet, telefon hepsinde çalışır). <br>
+        • <b>Görünsün</b> işaretli olanlar sol panelde listelenir. <br>
+        • <b>Açık Durum</b> işaretli olanlar, ekran açıldığında sol panelde tam açık gelir
+          ve içlerinden ilki sağ panele yüklenir. <br>
         • Değişiklikler tarayıcıya kayıt edilir (localStorage).
     </div>
 
@@ -283,7 +283,7 @@
 <script>
 /**
  * Sol panelde kullanabileceğimiz tüm pencereler.
- * id: drhastabasi.html içindeki panel id'si
+ * id: drhastabasi.html içindeki data-turu
  * title: kullanıcıya görünen isim
  */
 const ALL_PANELS = [
@@ -307,16 +307,17 @@ const statusBadge = document.getElementById('statusBadge');
 
 let sortableInstance = null;
 
-/** Varsayılan konfigürasyon (hepsi görünsün, sadece ilk panel açık olsun) */
+/** Varsayılan konfigürasyon (hepsi görünür, sadece ilki açık) */
 function getDefaultConfig() {
     return ALL_PANELS.map((p, index) => ({
         id: p.id,
         enabled: true,
-        acikDurum: index === 0   // ilk panel (hasta) açılışta açık
+        isDefault: index === 0,      // eski kodla uyum için
+        acikDurum: index === 0       // yeni: Açık Durum
     }));
 }
 
-/** localStorage’tan oku, eski isDefault alanını acikDurum'a çevir */
+/** localStorage’tan oku */
 function loadConfig() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -331,13 +332,17 @@ function loadConfig() {
         for (const item of parsed) {
             if (!item || typeof item.id !== 'string') continue;
             if (!knownIds.has(item.id)) continue;
+
+            const acikDurum =
+                (typeof item.acikDurum !== 'undefined')
+                    ? !!item.acikDurum
+                    : !!item.isDefault;   // eski datada isDefault açıktı → Açık Durum
+
             result.push({
                 id: item.id,
                 enabled: item.enabled !== false,
-                // yeni yapı: acikDurum, yoksa eski isDefault'tan türet
-                acikDurum: (typeof item.acikDurum !== 'undefined')
-                    ? !!item.acikDurum
-                    : !!item.isDefault
+                isDefault: !!item.isDefault,
+                acikDurum: acikDurum
             });
         }
 
@@ -345,7 +350,22 @@ function loadConfig() {
         const existingIds = new Set(result.map(r => r.id));
         for (const p of ALL_PANELS) {
             if (!existingIds.has(p.id)) {
-                result.push({ id: p.id, enabled: true, acikDurum: false });
+                result.push({
+                    id: p.id,
+                    enabled: true,
+                    isDefault: false,
+                    acikDurum: false
+                });
+            }
+        }
+
+        // En az bir açık & enabled olsun, yoksa ilk enabled'ı açık yap
+        let firstOpenIndex = result.findIndex(r => r.enabled && r.acikDurum);
+        if (firstOpenIndex === -1) {
+            const firstEnabled = result.findIndex(r => r.enabled);
+            if (firstEnabled !== -1) {
+                result[firstEnabled].acikDurum = true;
+                result[firstEnabled].isDefault = true;
             }
         }
 
@@ -394,7 +414,7 @@ function renderList(config) {
         li.className = 'panel-item';
         li.dataset.id = item.id;
 
-        const visId  = 'visible-' + item.id;
+        const visId = 'visible-' + item.id;
         const openId = 'open-' + item.id;
 
         li.innerHTML = `
@@ -424,7 +444,7 @@ function renderList(config) {
         panelListEl.appendChild(li);
     });
 
-    // Master checkbox'ları güncelle
+    // Master checkboxları güncelle
     const masterVisible = document.getElementById('toggleAllVisible');
     const masterOpen    = document.getElementById('toggleAllOpen');
 
@@ -432,10 +452,9 @@ function renderList(config) {
         const anyOff = config.some(c => !c.enabled);
         masterVisible.checked = !anyOff;
     }
-
     if (masterOpen) {
-        const anyOpenOff = config.some(c => !c.acikDurum);
-        masterOpen.checked = !anyOpenOff && config.length > 0;
+        const anyClosed = config.some(c => !c.acikDurum);
+        masterOpen.checked = !anyClosed;
     }
 
     initSortable();
@@ -509,16 +528,28 @@ function readConfigFromDOM() {
     const config = [];
 
     items.forEach(li => {
-        const id       = li.dataset.id;
-        const checkbox = li.querySelector('.panel-enabled-checkbox');
-        const openBox  = li.querySelector('.panel-open-checkbox');
+        const id           = li.dataset.id;
+        const checkboxVis  = li.querySelector('.panel-enabled-checkbox');
+        const checkboxOpen = li.querySelector('.panel-open-checkbox');
 
         config.push({
             id,
-            enabled: checkbox ? checkbox.checked : true,
-            acikDurum: openBox ? openBox.checked : false
+            enabled:  checkboxVis  ? checkboxVis.checked  : true,
+            acikDurum: checkboxOpen ? checkboxOpen.checked : false,
+            isDefault: false   // birazdan dolduracağız
         });
     });
+
+    // "isDefault" için: önce açık & enabled bir panel bul, yoksa ilk enabled
+    let defaultIndex = config.findIndex(c => c.enabled && c.acikDurum);
+    if (defaultIndex === -1) {
+        defaultIndex = config.findIndex(c => c.enabled);
+    }
+    if (defaultIndex !== -1) {
+        config.forEach((c, idx) => {
+            c.isDefault = (idx === defaultIndex);
+        });
+    }
 
     return config;
 }
@@ -529,7 +560,6 @@ function initSortable() {
         console.error('SortableJS yüklenemedi.');
         return;
     }
-    // Önce varsa eski instance’ı temizle
     if (sortableInstance) {
         sortableInstance.destroy();
         sortableInstance = null;
@@ -537,7 +567,7 @@ function initSortable() {
 
     sortableInstance = new Sortable(panelListEl, {
         animation: 150,
-        handle: '.drag-handle',   // sadece ☰ kısmından sürükle
+        handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         dragClass: 'sortable-drag',
@@ -554,7 +584,6 @@ if (saveBtn) {
         const newConfig = readConfigFromDOM();
         saveConfig(newConfig);
 
-        // 300ms sonra ana sayfaya dön
         setTimeout(() => {
             window.location.href = 'drhastabasi.html';
         }, 300);
