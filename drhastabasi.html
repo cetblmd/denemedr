@@ -945,16 +945,52 @@ th {
         display: none !important;
     }
 }
-
-
-
 </style>
+
+<style>
+/* CET: Yerel avatar kullan, dış resim çağrısı yok */
+.hasta-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.hasta-avatar svg {
+    width: 32px;
+    height: 32px;
+}
+.kucuk-resim {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    background: #e5e7eb;
+}
+</style>
+
+
 </head>
 <body>
 
 <div id="hasta-ozet">
     <div style="display:flex; align-items:center; gap:10px;">
-        <img src="https://picsum.photos/40?random=1" alt="Hasta">
+                <div class="hasta-avatar" aria-hidden="true">
+                    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="hbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#0f766e"/>
+                                <stop offset="100%" stop-color="#0369a1"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="32" cy="32" r="32" fill="url(#hbGrad)" />
+                        <path d="M16 52c2.5-8.5 8-13 16-13s13.5 4.5 16 13" fill="#e5e7eb" opacity="0.9"/>
+                        <circle cx="32" cy="26" r="9" fill="#f9fafb"/>
+                    </svg>
+                </div>
         <span>Ahmet Yılmaz - 35 / Erkek</span>
     </div>
 
