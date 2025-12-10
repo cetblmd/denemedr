@@ -63,6 +63,25 @@ body {
     width: 360px;
 }
 
+/* Dashboard modunda kartları çok uzamasın diye sınırla */
+body.dashboard-mode .dashboard-grid .kutu {
+    max-height: 320px;
+    overflow: hidden;
+}
+
+/* Özellikle hasta bilgisi kartı: iframe alanını sabitle, içte scroll olsun */
+body.dashboard-mode .dashboard-grid .kutu[data-turu="hasta-bilgisi"] .hasta-bilgisi-embed {
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+/* İçteki iframe'in yüksekliği container'a uysun */
+body.dashboard-mode .dashboard-grid .kutu[data-turu="hasta-bilgisi"] .hasta-bilgisi-embed iframe {
+    height: 100%;
+}
+
+
+
 /* Kartlar */
 .kutu {
     background-color: #ffffff;
@@ -2061,6 +2080,10 @@ function applyDashboardLayout(active) {
     }
 
     if (active) {
+
+// YENİ
+        document.body.classList.add('dashboard-mode');
+
         solPanel.style.display = 'none';
         sagPanel.style.width = '100%';
         solHidden = true;
@@ -2071,6 +2094,10 @@ function applyDashboardLayout(active) {
         leftPanelBtn.textContent = '➡️';
         leftPanelBtn.title = 'Sol Paneli Göster';
     } else {
+
+// YENİ
+        document.body.classList.remove('dashboard-mode');
+
         solPanel.style.display = 'flex';
         if (window.matchMedia("(max-width: 1024px)").matches) {
             solPanel.style.width = '35%';
