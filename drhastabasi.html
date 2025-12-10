@@ -1300,21 +1300,38 @@ let lastRightPanelHTML = defaultSagIcerikHTML;
 
 function resizeHastaBilgisiFrame() {
     try {
-        // Sol panel + sağ panele kopyalanan TÜM iframe'leri yakala
-        const frames = document.querySelectorAll('iframe#hastaBilgisiFrame, iframe[src*="hastabilgisi"]');
+        // Hem sağ panelde hem sol panelde olabilecek TÜM hastaBilgisi iframe'lerini yakala
+        const frames = document.querySelectorAll(
+            'iframe#hastaBilgisiFrame, iframe[src*="hastabilgisi"]'
+        );
 
         frames.forEach(frame => {
-            const doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
-            if (!doc) return;
+            let attempts = 0;
 
-            const body = doc.body;
-            if (!body) return;
+            const doResize = () => {
+                const doc  = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+                if (!doc) return;
 
-            // İçerik yüksekliği kadar iframe yüksekliği
-            frame.style.height = body.scrollHeight + 'px';
+                const body = doc.body;
+                if (!body) return;
+
+                const newHeight = body.scrollHeight;
+                if (newHeight && frame._lastHBHeight !== newHeight) {
+                    frame.style.height = newHeight + "px";
+                    frame._lastHBHeight = newHeight;
+                }
+
+                // İçerik zamanla şişebildiği için (Kendo, font vs.),
+                // birkaç kez daha yükseklik ölçelim
+                if (attempts++ < 10) {           // yaklaşık 3 saniye kadar
+                    setTimeout(doResize, 300);    // her 300 ms'de bir tekrar dene
+                }
+            };
+
+            doResize();
         });
     } catch (e) {
-        console.error('hastaBilgisiFrame resize hatası:', e);
+        console.error("hastaBilgisiFrame resize hatası:", e);
     }
 }
 
