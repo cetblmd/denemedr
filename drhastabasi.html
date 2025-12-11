@@ -1446,49 +1446,19 @@ function getDefaultQuickConfig() {
 
 // drhastabasiozellestir.html'in yazacağı yapı:
 // - Eski basit format: [ {id, enabled}, ... ]
-// - Yeni çoklu format: { desktop: [...], tablet: [...], mobile: [...] }
-function loadQuickConfigForMode() {
-    const raw = localStorage.getItem('quickAccessConfig');
-    if (!raw) return getDefaultQuickConfig();
+// - Yeni çoklu format:
+//   {
+//     desktop: { items:[...], align:'left|center|right' },
+//     tablet:  { items:[...], align:'...' },
+//     mobile:  { items:[...], align:'...' }
+//   }
 
-    let parsed;
-    try {
-        parsed = JSON.parse(raw);
-    } catch {
-        return getDefaultQuickConfig();
-    }
-
-    let arr = null;
-
-    if (Array.isArray(parsed)) {
-        // Eski format
-        arr = parsed;
-    } else if (parsed && typeof parsed === 'object') {
-        // Çoklu profil
-        const mode = typeof getViewportMode === 'function'
-            ? getViewportMode()
-            : 'desktop';
-
-        if (Array.isArray(parsed[mode])) {
-            arr = parsed[mode];
-        } else if (Array.isArray(parsed.desktop)) {
-            arr = parsed.desktop;
-        } else if (Array.isArray(parsed.tablet)) {
-            arr = parsed.tablet;
-        } else if (Array.isArray(parsed.mobile)) {
-            arr = parsed.mobile;
-        }
-    }
-
-    if (!Array.isArray(arr)) {
-        return getDefaultQuickConfig();
-    }
-
+// Gelen diziyi normalize et (bilinmeyen id'leri at, eksik olanları sona ek)
+function normalizeQuickItems(arr) {
     const knownIds = new Set(QUICK_ACTIONS.map(a => a.id));
     const result = [];
 
-    // Config'te gelen sıraya göre ekle
-    for (const item of arr) {
+    for (const item of arr || []) {
         if (!item || typeof item.id !== 'string') continue;
         if (!knownIds.has(item.id)) continue;
 
@@ -1498,7 +1468,6 @@ function loadQuickConfigForMode() {
         });
     }
 
-    // Eksik olan varsayılanları sona ekle
     const existingIds = new Set(result.map(r => r.id));
     for (const a of QUICK_ACTIONS) {
         if (!existingIds.has(a.id)) {
@@ -1509,17 +1478,92 @@ function loadQuickConfigForMode() {
     return result;
 }
 
+function loadQuickConfigForMode() {
+    const DEFAULT_ALIGN = 'right';
+
+    const defaultResult = () => ({
+        items: getDefaultQuickConfig(),
+        align: DEFAULT_ALIGN
+    });
+
+    const raw = localStorage.getItem('quickAccessConfig');
+    if (!raw) return defaultResult();
+
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        return defaultResult();
+    }
+
+    // Eski tek dizi formatı: [ {id, enabled}, ... ]
+    if (Array.isArray(parsed)) {
+        return {
+            items: normalizeQuickItems(parsed),
+            align: DEFAULT_ALIGN
+        };
+    }
+
+    // Yeni çoklu profil formatı
+    if (parsed && typeof parsed === 'object') {
+        const mode = typeof getViewportMode === 'function'
+            ? getViewportMode()
+            : 'desktop';
+
+        // İlgili modu seç, yoksa desktop → tablet → mobile fallback
+        let block = parsed[mode] ?? parsed.desktop ?? parsed.tablet ?? parsed.mobile;
+
+        // Bazı eski kayıtlarda hala direkt dizi olabilir
+        if (Array.isArray(block)) {
+            return {
+                items: normalizeQuickItems(block),
+                align: DEFAULT_ALIGN
+            };
+        }
+
+        // Beklenen yeni format: { items:[...], align:'...' }
+        if (block && typeof block === 'object') {
+            const itemsArray = Array.isArray(block.items) ? block.items : [];
+            let alignValue = (block.align || DEFAULT_ALIGN).toString().toLowerCase();
+
+            if (!['left', 'center', 'right'].includes(alignValue)) {
+                alignValue = DEFAULT_ALIGN;
+            }
+
+            return {
+                items: normalizeQuickItems(itemsArray),
+                align: alignValue
+            };
+        }
+    }
+
+    return defaultResult();
+}
+
 function buildQuickActionsBar() {
     const bar = document.getElementById('hizli-aksiyon-bar');
     if (!bar) return;
 
-    const config = loadQuickConfigForMode();
+    const cfg = loadQuickConfigForMode();
+    const configItems = cfg.items || [];
+    const align = cfg.align || 'right';
+
     const defMap = new Map(QUICK_ACTIONS.map(a => [a.id, a]));
+
+    // Hizalama: sola / ortaya / sağa
+    let jc = 'flex-end';          // varsayılan: sağ
+    if (align === 'left') {
+        jc = 'flex-start';
+    } else if (align === 'center') {
+        jc = 'center';
+    }
+    bar.style.justifyContent = jc;
 
     // Eski statik butonları temizle
     bar.innerHTML = '';
 
-    config.forEach(item => {
+    // Sadece "enabled" olanları sıraya göre ekle
+    configItems.forEach(item => {
         if (!item || item.enabled === false) return;
 
         const def = defMap.get(item.id);
