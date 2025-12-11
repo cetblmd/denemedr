@@ -1526,13 +1526,15 @@ function loadQuickConfigForMode() {
             const itemsArray = Array.isArray(block.items) ? block.items : [];
             let alignValue = (block.align || DEFAULT_ALIGN).toString().toLowerCase();
 
+
             if (!['left', 'center', 'right'].includes(alignValue)) {
                 alignValue = DEFAULT_ALIGN;
             }
 
             return {
                 items: normalizeQuickItems(itemsArray),
-                align: alignValue
+                align: alignValue,
+		barVisible: (typeof block.barVisible === 'boolean') ? block.barVisible : true
             };
         }
     }
@@ -1547,6 +1549,13 @@ function buildQuickActionsBar() {
     const cfg = loadQuickConfigForMode();
     const configItems = cfg.items || [];
     const align = cfg.align || 'right';
+
+if (cfg.barVisible === false) {
+    bar.style.display = 'none';   // Bar gizleniyor
+} else {
+    bar.style.display = 'flex';   // Bar gösteriliyor
+}
+
 
     const defMap = new Map(QUICK_ACTIONS.map(a => [a.id, a]));
 

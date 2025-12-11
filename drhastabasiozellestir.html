@@ -464,12 +464,17 @@
             </div>
 
             <div class="qa-header">
-                <div class="qa-visible">
-                    <input type="checkbox" id="qaToggleAllVisible">
-                    <span class="ph-visible-label">Görünsün</span>
-                </div>
-                <div></div>
-            </div>
+		<div class="qa-visible">
+		        <input type="checkbox" id="qaToggleAllVisible">
+		        <span class="ph-visible-label">Görünsün</span>
+		</div>
+
+    		<div class="qa-bar-visible" style="margin-left:20px; display:flex; align-items:center; gap:6px;">
+		        <input type="checkbox" id="qaBarVisible">
+		        <span class="ph-visible-label">Bar Gözüksün</span>
+		    </div>
+	    </div>
+
 
             <ul id="quickList" class="qa-list"></ul>
 
@@ -933,13 +938,7 @@ function loadQuickConfigForActiveMode() {
     const rawMulti = loadQuickRawMultiConfig();
     let block = rawMulti[ACTIVE_MODE];
 
-    if (Array.isArray(block)) {
-        return {
-            items: normalizeQuickItems(block),
-            align: getDefaultQuickAlign()
-        };
-    }
-
+    // Aktif mod boşsa, eski kayıtlardan (desktop/tablet/mobile) birini fallback olarak kullan
     if (!block) {
         if (Array.isArray(rawMulti.desktop) || (rawMulti.desktop && typeof rawMulti.desktop === 'object')) {
             block = rawMulti.desktop;
@@ -951,32 +950,42 @@ function loadQuickConfigForActiveMode() {
     }
 
     let itemsArr;
-    let align;
+    let align = getDefaultQuickAlign();
+    let barVisible = true;  // varsayılan: bar açık
 
     if (Array.isArray(block)) {
+        // Eski format: sadece dizi
         itemsArr = normalizeQuickItems(block);
-        align = getDefaultQuickAlign();
     } else if (block && typeof block === 'object') {
+        // Yeni format: { items:[...], align:'...', barVisible:true/false }
         const rawItems = Array.isArray(block.items)
             ? block.items
             : getDefaultQuickConfigArray();
+
         itemsArr = normalizeQuickItems(rawItems);
-        align = block.align || getDefaultQuickAlign();
+
+        if (block.align) {
+            align = block.align;
+        }
+        if (typeof block.barVisible === 'boolean') {
+            barVisible = block.barVisible;
+        }
     } else {
+        // Hiç config yoksa
         itemsArr = normalizeQuickItems(getDefaultQuickConfigArray());
-        align = getDefaultQuickAlign();
     }
 
-    return { items: itemsArr, align };
+    return { items: itemsArr, align, barVisible };
 }
 
-function saveQuickConfigForActiveMode(itemsArray, alignValue) {
+function saveQuickConfigForActiveMode(itemsArray, alignValue, barVisible) {
     try {
         const rawMulti = loadQuickRawMultiConfig();
 
         rawMulti[ACTIVE_MODE] = {
             items: itemsArray,
-            align: alignValue || getDefaultQuickAlign()
+            align: alignValue || getDefaultQuickAlign(),
+            barVisible: barVisible
         };
 
         const toStore = {
@@ -998,6 +1007,16 @@ function renderQuickList(configParam) {
 
     let itemsConfig;
     let align = getDefaultQuickAlign();
+
+let barVisible = true;  // varsayılan
+if (configParam && typeof configParam.barVisible !== 'undefined') {
+    barVisible = configParam.barVisible;
+}
+setTimeout(() => {
+    const chk = document.getElementById('qaBarVisible');
+    if (chk) chk.checked = barVisible;
+}, 0);
+
 
     if (Array.isArray(configParam)) {
         itemsConfig = normalizeQuickItems(configParam);
@@ -1142,6 +1161,7 @@ if (saveAllBtn) {
         try {
             const newSolConfig   = readSolConfigFromDOM();
             const newQuickItems  = readQuickConfigFromDOM();
+	    const barVisible = document.getElementById('qaBarVisible').checked;
 
             let newQuickAlign = getDefaultQuickAlign();
             const radios = document.querySelectorAll('input[name="qaAlign"]');
@@ -1152,7 +1172,8 @@ if (saveAllBtn) {
             });
 
             saveSolConfigForActiveMode(newSolConfig);
-            saveQuickConfigForActiveMode(newQuickItems, newQuickAlign);
+            saveQuickConfigForActiveMode(newQuickItems, newQuickAlign, barVisible);
+
 
             showStatus('Tüm ayarlar kaydedildi.', true);
 
@@ -1178,8 +1199,8 @@ if (resetQuickBtn) {
     resetQuickBtn.addEventListener('click', () => {
         const defItems = getDefaultQuickConfigArray();
         const defAlign = getDefaultQuickAlign();
-        renderQuickList({ items: defItems, align: defAlign });
-        saveQuickConfigForActiveMode(defItems, defAlign);
+        renderQuickList({ items: defItems, align: defAlign, barVisible: true });
+        saveQuickConfigForActiveMode(defItems, defAlign, true);
         showStatus('Hızlı Erişim varsayılanlara döndü.', true);
     });
 }
