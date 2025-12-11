@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8" />
-    <title>Sol Paneli Özelleştir</title>
+    <title>Dr Hasta Başı Özelleştir</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- SortableJS: sürükle-bırak için küçük ve hafif bir kütüphane -->
@@ -27,18 +27,86 @@
         }
         h1 {
             font-size: 20px;
-            margin: 0 0 4px;
+            margin: 0 0 10px;
         }
-        .subtitle {
-            font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 16px;
+
+        .status-container {
+            font-size: 12px;
+            min-height: 18px;
+        }
+
+        .badge-ok {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: #ecfdf3;
+            color: #15803d;
+            margin-left: 6px;
+        }
+        .badge-error {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: #fef2f2;
+            color: #b91c1c;
+            margin-left: 6px;
+        }
+
+        /* Aç/kapatlı bölüm (accordion) */
+        .section {
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            margin-top: 8px;
+        }
+
+        .section-header {
+            width: 100%;
+            border: none;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .section-header:hover {
+            background: #eef2ff;
+        }
+
+        .section-arrow {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .section-title {
+            flex: 1;
+            text-align: left;
+        }
+
+        .section-body {
+            padding: 6px 8px 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .section.collapsed .section-body {
+            display: none;
+        }
+
+        .section.collapsed .section-arrow {
+            transform: rotate(-90deg);
         }
 
         .panel-list {
             list-style: none;
             padding: 0;
-            margin: 0 0 12px;
+            margin: 0 0 8px;
         }
 
         /* ÜST BAŞLIK VE SATIRLAR AYNI GRID YAPISINI KULLANIYOR
@@ -54,7 +122,7 @@
 
         /* Başlık satırı */
         .panel-header {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             padding-left: 10px;
             padding-right: 10px;
             font-size: 13px;
@@ -64,7 +132,7 @@
 
         /* SATIR STİLLERİ */
         .panel-item {
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             border-radius: 8px;
             background: #f9fafb;
             border: 1px solid #e5e7eb;
@@ -147,7 +215,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 8px;
-            margin-top: 10px;
+            margin-top: 6px;
         }
         .btn {
             border-radius: 999px;
@@ -170,30 +238,6 @@
         }
         .btn-primary:hover {
             background: #0d4979;
-        }
-
-        .info {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 6px;
-        }
-        .badge-ok {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            background: #ecfdf3;
-            color: #15803d;
-            margin-left: 6px;
-        }
-        .badge-error {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            background: #fef2f2;
-            color: #b91c1c;
-            margin-left: 6px;
         }
 
         @media (max-width: 600px) {
@@ -240,50 +284,85 @@
     ✖
 </button>
 
-    <h1>Sol Paneli Özelleştir</h1>
-    <div class="subtitle">
-        Sol panelde hangi pencerelerin görüneceğini, sırasını ve açılışta hangilerinin açık olacağını buradan belirleyebilirsiniz.
-        <div id="statusBadge"></div>
+    <!-- Üst açıklama: Mobile / Tablet / PC için Dr Hasta Başı Özelleştir -->
+    <h1 id="mainTitle">Dr Hasta Başı Özelleştir</h1>
+
+    <div class="status-container">
+        <span id="modeInfo"></span>
+        <span id="statusBadge"></span>
     </div>
 
-    <!-- ÜST BAŞLIK: Görünsün solda, ortada boş, sağda Açılışta açık -->
-    <div class="panel-header">
-        <div class="col-visible">
-            <input type="checkbox" id="toggleAllVisible">
-            <span class="ph-visible-label">Görünsün</span>
+    <!-- SOL PANEL BÖLÜMÜ (accordion) -->
+    <div class="section" id="solPanelSection">
+        <button class="section-header" id="solPanelToggle" type="button">
+            <span class="section-arrow">▼</span>
+            <span class="section-title">Sol Panel</span>
+        </button>
+        <div class="section-body" id="solPanelBody">
+
+            <!-- ÜST BAŞLIK: Görünsün solda, ortada boş, sağda Açılışta açık -->
+            <div class="panel-header">
+                <div class="col-visible">
+                    <input type="checkbox" id="toggleAllVisible">
+                    <span class="ph-visible-label">Görünsün</span>
+                </div>
+
+                <div></div>
+
+                <div class="col-default">
+                    <input type="checkbox" id="toggleAllOpen">
+                    <span class="ph-default-label">Açılışta açık</span>
+                </div>
+            </div>
+
+            <ul id="panelList" class="panel-list">
+                <!-- JS ile doldurulacak -->
+            </ul>
+
+            <div class="btn-row">
+                <button id="resetBtn" class="btn btn-ghost">Varsayılanlara Dön</button>
+                <button id="saveBtn" class="btn btn-primary">Kaydet</button>
+            </div>
         </div>
-
-        <div></div>
-
-        <div class="col-default">
-            <input type="checkbox" id="toggleAllOpen">
-            <span class="ph-default-label">Açılışta açık</span>
-        </div>
-    </div>
-
-    <ul id="panelList" class="panel-list">
-        <!-- JS ile doldurulacak -->
-    </ul>
-
-    <div class="info">
-        • Satırın solundaki ☰ simgesinden tutup sürükleyerek sırasını değiştirebilirsiniz
-          (PC, tablet, telefon hepsinde çalışır). <br>
-        • <b>Görünsün</b> işaretli olanlar sol panelde listelenir. <br>
-        • <b>Açılışta açık</b> işaretli olanlar, ekran açıldığında sol panelde tam açık gelir
-          ve içlerinden ilki sağ panele yüklenir. <br>
-        • Değişiklikler tarayıcıya kayıt edilir (localStorage).
-    </div>
-
-    <div class="btn-row">
-        <button id="resetBtn" class="btn btn-ghost">Varsayılanlara Dön</button>
-        <button id="saveBtn" class="btn btn-primary">Kaydet</button>
     </div>
 </div>
 
 <script>
 /**
+ * Ekran genişliğine göre cihaz tipini belirler.
+ * mode: 'desktop' | 'tablet' | 'mobile'
+ * label: başlıkta gösterilecek (PC / Tablet / Mobile)
+ */
+function detectDeviceMode() {
+    const w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    if (w <= 768) {
+        return { mode: 'mobile', label: 'Mobile' };
+    }
+    if (w <= 1024) {
+        return { mode: 'tablet', label: 'Tablet' };
+    }
+    return { mode: 'desktop', label: 'PC' };
+}
+
+const DEVICE = detectDeviceMode();
+const ACTIVE_MODE = DEVICE.mode;   // 'desktop' | 'tablet' | 'mobile'
+const MODE_LABEL = DEVICE.label;
+
+// Üst başlığı güncelle
+const mainTitleEl = document.getElementById('mainTitle');
+if (mainTitleEl) {
+    mainTitleEl.textContent = `${MODE_LABEL} için Dr Hasta Başı Özelleştir`;
+}
+
+// Mode bilgisini göster
+const modeInfoEl = document.getElementById('modeInfo');
+if (modeInfoEl) {
+    modeInfoEl.textContent = `${MODE_LABEL} görünümü için Sol Panel ayarları`;
+}
+
+/**
  * Sol panelde kullanabileceğimiz tüm pencereler.
- * id: drhastabasi.html içindeki data-turu
+ * id: drhastabasi.html içindeki ID'ler
  * title: kullanıcıya görünen isim
  */
 const ALL_PANELS = [
@@ -298,6 +377,7 @@ const ALL_PANELS = [
     { id: 'panel-randevu',        title: 'Randevu ve Kontroller' }
 ];
 
+// Çoklu profil için tek anahtar
 const STORAGE_KEY = 'solPanelConfig';
 
 const panelListEl = document.getElementById('panelList');
@@ -308,78 +388,151 @@ const statusBadge = document.getElementById('statusBadge');
 let sortableInstance = null;
 
 /** Varsayılan konfigürasyon (hepsi görünür, sadece ilki açık) */
-function getDefaultConfig() {
+function getDefaultConfigArray() {
     return ALL_PANELS.map((p, index) => ({
         id: p.id,
         enabled: true,
-        isDefault: index === 0,      // eski kodla uyum için
-        acikDurum: index === 0       // yeni: Açılışta açık
+        isDefault: index === 0,
+        acikDurum: index === 0
     }));
 }
 
-/** localStorage’tan oku */
-function loadConfig() {
+/**
+ * localStorage'tan çoklu profil formatını okur.
+ * Dönen değer:
+ * {
+ *   desktop: [...],
+ *   tablet:  [...],
+ *   mobile:  [...]
+ * }
+ */
+function loadRawMultiConfig() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return getDefaultConfig();
+        if (!raw) {
+            // Hiç kayıt yoksa tüm modlar için boş obje döndür.
+            return {
+                desktop: null,
+                tablet: null,
+                mobile: null
+            };
+        }
+
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return getDefaultConfig();
 
-        const knownIds = new Set(ALL_PANELS.map(p => p.id));
-        const result = [];
-
-        // Kayıtlı olanları sırayla ekle (sadece bilinenler)
-        for (const item of parsed) {
-            if (!item || typeof item.id !== 'string') continue;
-            if (!knownIds.has(item.id)) continue;
-
-            const acikDurum =
-                (typeof item.acikDurum !== 'undefined')
-                    ? !!item.acikDurum
-                    : !!item.isDefault;   // eski datada isDefault açıktı → Açılışta açık
-
-            result.push({
-                id: item.id,
-                enabled: item.enabled !== false,
-                isDefault: !!item.isDefault,
-                acikDurum: acikDurum
-            });
+        // Eski format: düz array -> tüm modlara aynı set
+        if (Array.isArray(parsed)) {
+            return {
+                desktop: parsed,
+                tablet: parsed,
+                mobile: parsed
+            };
         }
 
-        // Yeni eklenen panelleri sona ekle
-        const existingIds = new Set(result.map(r => r.id));
-        for (const p of ALL_PANELS) {
-            if (!existingIds.has(p.id)) {
-                result.push({
-                    id: p.id,
-                    enabled: true,
-                    isDefault: false,
-                    acikDurum: false
-                });
-            }
+        // Yeni format: object
+        if (parsed && typeof parsed === 'object') {
+            return {
+                desktop: Array.isArray(parsed.desktop) ? parsed.desktop : null,
+                tablet:  Array.isArray(parsed.tablet)  ? parsed.tablet  : null,
+                mobile:  Array.isArray(parsed.mobile)  ? parsed.mobile  : null
+            };
         }
 
-        // En az bir açık & enabled olsun, yoksa ilk enabled'ı açık yap
-        let firstOpenIndex = result.findIndex(r => r.enabled && r.acikDurum);
-        if (firstOpenIndex === -1) {
-            const firstEnabled = result.findIndex(r => r.enabled);
-            if (firstEnabled !== -1) {
-                result[firstEnabled].acikDurum = true;
-                result[firstEnabled].isDefault = true;
-            }
-        }
-
-        return result;
+        // Bozuksa sıfırla
+        return {
+            desktop: null,
+            tablet: null,
+            mobile: null
+        };
     } catch (e) {
-        console.error('Config yüklenirken hata:', e);
-        return getDefaultConfig();
+        console.error('solPanelConfig parse hatası:', e);
+        return {
+            desktop: null,
+            tablet: null,
+            mobile: null
+        };
     }
 }
 
-/** Config’i kaydet */
-function saveConfig(config) {
+/** Aktif mode için normalize config dizisi döndürür */
+function loadConfigForActiveMode() {
+    const rawMulti = loadRawMultiConfig();
+
+    // Önce aktif mode için bak
+    let arr = rawMulti[ACTIVE_MODE];
+
+    // Aktif modda yoksa sırayla desktop/tablet/mobile fallback
+    if (!Array.isArray(arr)) {
+        arr = rawMulti.desktop || rawMulti.tablet || rawMulti.mobile || null;
+    }
+
+    // Hâlâ yoksa varsayılan dizi
+    if (!Array.isArray(arr)) {
+        return getDefaultConfigArray();
+    }
+
+    // Filtre + normalize
+    const knownIds = new Set(ALL_PANELS.map(p => p.id));
+    const result = [];
+
+    for (const item of arr) {
+        if (!item || typeof item.id !== 'string') continue;
+        if (!knownIds.has(item.id)) continue;
+
+        const acikDurum =
+            (typeof item.acikDurum !== 'undefined')
+                ? !!item.acikDurum
+                : !!item.isDefault;
+
+        result.push({
+            id: item.id,
+            enabled: item.enabled !== false,
+            isDefault: !!item.isDefault,
+            acikDurum
+        });
+    }
+
+    // Eksik panelleri sona ekle
+    const existingIds = new Set(result.map(r => r.id));
+    for (const p of ALL_PANELS) {
+        if (!existingIds.has(p.id)) {
+            result.push({
+                id: p.id,
+                enabled: true,
+                isDefault: false,
+                acikDurum: false
+            });
+        }
+    }
+
+    // En az bir tane açık & enabled olsun
+    let firstOpenIndex = result.findIndex(r => r.enabled && r.acikDurum);
+    if (firstOpenIndex === -1) {
+        const firstEnabled = result.findIndex(r => r.enabled);
+        if (firstEnabled !== -1) {
+            result[firstEnabled].acikDurum = true;
+            result[firstEnabled].isDefault = true;
+        }
+    }
+
+    return result;
+}
+
+/** Config’i çoklu formatta kaydeder */
+function saveConfigForActiveMode(configArray) {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        const rawMulti = loadRawMultiConfig();
+
+        // Aktif mode'a yeni seti yaz
+        rawMulti[ACTIVE_MODE] = configArray;
+
+        const toStore = {
+            desktop: rawMulti.desktop || null,
+            tablet:  rawMulti.tablet  || null,
+            mobile:  rawMulti.mobile  || null
+        };
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
         showStatus('Ayarlar kaydedildi.', true);
     } catch (e) {
         console.error('Config kaydedilirken hata:', e);
@@ -522,7 +675,7 @@ function attachConfigInteractions() {
     }
 }
 
-/** Mevcut listedeki sırayı + checkbox durumlarını config’e çevir */
+/** Mevcut listedeki sırayı + checkbox durumlarını config'e çevir */
 function readConfigFromDOM() {
     const items = panelListEl.querySelectorAll('.panel-item');
     const config = [];
@@ -575,14 +728,14 @@ function initSortable() {
 }
 
 /** Başlatma */
-const initialConfig = loadConfig();
+const initialConfig = loadConfigForActiveMode();
 renderList(initialConfig);
 
 /** Kaydet butonu */
 if (saveBtn) {
     saveBtn.addEventListener('click', () => {
         const newConfig = readConfigFromDOM();
-        saveConfig(newConfig);
+        saveConfigForActiveMode(newConfig);
 
         setTimeout(() => {
             window.location.href = 'drhastabasi.html';
@@ -593,9 +746,9 @@ if (saveBtn) {
 /** Varsayılanlara dön butonu */
 if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-        const def = getDefaultConfig();
+        const def = getDefaultConfigArray();
         renderList(def);
-        saveConfig(def);
+        saveConfigForActiveMode(def);
     });
 }
 
@@ -604,6 +757,16 @@ const closeConfigBtn = document.getElementById('closeConfigBtn');
 if (closeConfigBtn) {
     closeConfigBtn.addEventListener('click', () => {
         window.location.href = 'drhastabasi.html';
+    });
+}
+
+// Sol Panel bölümünü aç/kapat
+const solPanelSection = document.getElementById('solPanelSection');
+const solPanelToggle  = document.getElementById('solPanelToggle');
+
+if (solPanelSection && solPanelToggle) {
+    solPanelToggle.addEventListener('click', () => {
+        solPanelSection.classList.toggle('collapsed');
     });
 }
 </script>

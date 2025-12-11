@@ -1246,8 +1246,8 @@ th {
         <!-- Açılır Ayarlar menüsü -->
         <button id="settingsMainBtn" type="button">⚙️ Ayarlar ▾</button>
         <div id="settingsSubmenu" class="settings-submenu">
-            <button type="button" onclick="window.location.href='drhastabasisolpanelozellestir.html'">
-                🧩 Sol Paneli Özelleştir
+            <button type="button" onclick="window.location.href='drhastabasiozellestir.html'">
+                🧩 Özelleştir
             </button>
             <!-- İlerde buraya başka alt ayarlar da ekleyebiliriz -->
         </div>
@@ -1296,8 +1296,8 @@ th {
 <div id="mobileSettingsSubmenu" class="settings-submenu">
     <button
         type="button"
-        onclick="window.location.href='drhastabasisolpanelozellestir.html'">
-        🧩 Sol Paneli Özelleştir
+        onclick="window.location.href='drhastabasiozellestir.html'">
+        🧩 Özelleştir
     </button>
 </div>
         </div>
@@ -1447,31 +1447,43 @@ const SOL_PANEL_ALL_IDS = [
 
 function loadSolPanelConfigNormalized() {
     const STORAGE_KEY = 'solPanelConfig';
+    const mode = getViewportMode ? getViewportMode() : 'desktop';
+
+    const defaultConfig = () =>
+        SOL_PANEL_ALL_IDS.map((id, index) => ({
+            id,
+            enabled: true,
+            isDefault: index === 0
+        }));
+
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) {
-            // Hiç kayıt yoksa: hepsi açık, ilk panel default
-            return SOL_PANEL_ALL_IDS.map((id, index) => ({
-                id,
-                enabled: true,
-                isDefault: index === 0
-            }));
-        }
+        if (!raw) return defaultConfig();
 
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-            return SOL_PANEL_ALL_IDS.map((id, index) => ({
-                id,
-                enabled: true,
-                isDefault: index === 0
-            }));
+
+        let arr = null;
+
+        if (Array.isArray(parsed)) {
+            // 🔹 Eski format: tek set → tüm cihazlar için aynı
+            arr = parsed;
+        } else if (parsed && typeof parsed === 'object') {
+            // 🔹 Yeni format: { desktop: [...], tablet: [...], mobile: [...] }
+            arr =
+                parsed[mode] ||
+                parsed.desktop ||
+                parsed.tablet ||
+                parsed.mobile ||
+                null;
         }
+
+        if (!Array.isArray(arr)) return defaultConfig();
 
         const knownIds = new Set(SOL_PANEL_ALL_IDS);
         const result = [];
 
         // Kayıtlı olanları sırayla ekle (sadece bilinen ID'ler)
-        for (const item of parsed) {
+        for (const item of arr) {
             if (!item || typeof item.id !== 'string') continue;
             if (!knownIds.has(item.id)) continue;
 
@@ -1506,44 +1518,31 @@ function loadSolPanelConfigNormalized() {
         return result;
     } catch (e) {
         console.error('solPanelConfig yüklenirken hata:', e);
-        // Hata durumunda da tamamen boş kalmasın
-        return SOL_PANEL_ALL_IDS.map((id, index) => ({
-            id,
-            enabled: true,
-            isDefault: index === 0
-        }));
+        return defaultConfig();
     }
 }
 
 /* === SOL PANEL ÖZELLEŞTİRME AYARLARINI UYGULA === */
 
 function applySolPanelConfig() {
-    const raw = localStorage.getItem('solPanelConfig');
-    if (!raw) return;  // hiç ayar yoksa dokunma
-
-    let config;
-    try {
-        config = JSON.parse(raw);
-    } catch {
-        return;
-    }
-    if (!Array.isArray(config)) return;
-
     const solPanelEl = document.getElementById('solPanel');
     if (!solPanelEl) return;
+
+    const config = loadSolPanelConfigNormalized();
+    if (!config || !config.length) return;
 
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
     // 1) Sıraya göre kutuları yeniden diz
     config.forEach(item => {
         if (!item || !item.id) return;
-        const el = document.getElementById(item.id); // Örn: panel-hasta-bilgisi
+        const el = document.getElementById(item.id);
         if (el && el.parentElement === solPanelEl) {
-            solPanelEl.appendChild(el); // sıraya göre sona ekleyerek diz
+            solPanelEl.appendChild(el);
         }
     });
 
-    // 2) Görünürlük ayarlarını uygula (GÖRÜNSÜN sütunu)
+    // 2) Görünürlük (GÖRÜNSÜN sütunu)
     config.forEach(item => {
         if (!item || !item.id) return;
         const el = document.getElementById(item.id);
@@ -1552,7 +1551,7 @@ function applySolPanelConfig() {
         }
     });
 
-    // 3) AÇIK DURUM sütununu uygula → sol panelde kartları SANKİ AÇ DÜĞMESİNE BASILMIŞ GİBİ aç/kapa
+    // 3) Açık / kapalı durum
     const openIds = getOpenPanelIdsFromConfig();
 
     config.forEach(item => {
@@ -1564,34 +1563,25 @@ function applySolPanelConfig() {
         const toggleBtn = headerEl ? headerEl.querySelector('.kutu-toggle-btn') : null;
 
         if (openIds.includes(item.id)) {
-            // 🔵 PANEL AÇIK OLMALI
-            el.classList.add('full');   // senin tam açma isteğin
+            // AÇIK
+            el.classList.add('full');
             if (isMobile) {
-                // Mobil – mevcut çalışan yapı
                 el.classList.add('active');
             } else {
-                // Desktop/Tablet – collapsed/expanded mantığı
                 el.classList.add('expanded');
                 el.classList.remove('collapsed');
             }
-
-            if (toggleBtn) {
-                toggleBtn.textContent = '▾'; // ok aşağı
-            }
+            if (toggleBtn) toggleBtn.textContent = '▾';
         } else {
-            // 🔴 PANEL KAPALI
+            // KAPALI
             el.classList.remove('full');
-
             if (isMobile) {
                 el.classList.remove('active');
             } else {
                 el.classList.remove('expanded');
                 el.classList.add('collapsed');
             }
-
-            if (toggleBtn) {
-                toggleBtn.textContent = '▸'; // ok sağa
-            }
+            if (toggleBtn) toggleBtn.textContent = '▸';
         }
     });
 }
@@ -1616,17 +1606,34 @@ function getDefaultPanelIdFromConfig() {
 
     return chosen ? chosen.id : 'panel-hasta-bilgisi';
 }
+
 function getOpenPanelIdsFromConfig() {
-    const raw = localStorage.getItem('solPanelConfig');
+    const STORAGE_KEY = 'solPanelConfig';
+    const mode = getViewportMode ? getViewportMode() : 'desktop';
+
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
 
     try {
-        const cfg = JSON.parse(raw);
-        if (!Array.isArray(cfg)) return [];
+        const parsed = JSON.parse(raw);
 
-        // Açık/kapalı bilgisi için kullanılabilecek olası alan adları:
-        // acikDurum, acik, open, isOpen
-        const hasAnyOpenFlag = cfg.some(c =>
+        let cfgArray = null;
+
+        if (Array.isArray(parsed)) {
+            // Eski tek set format
+            cfgArray = parsed;
+        } else if (parsed && typeof parsed === 'object') {
+            cfgArray =
+                parsed[mode] ||
+                parsed.desktop ||
+                parsed.tablet ||
+                parsed.mobile ||
+                null;
+        }
+
+        if (!Array.isArray(cfgArray)) return [];
+
+        const hasAnyOpenFlag = cfgArray.some(c =>
             c && (
                 typeof c.acikDurum !== 'undefined' ||
                 typeof c.acik      !== 'undefined' ||
@@ -1635,14 +1642,11 @@ function getOpenPanelIdsFromConfig() {
             )
         );
 
-        // 🔴 Artık ESKİ DAVRANIŞ YOK!
-        // hasAnyOpenFlag false ise bile, hiçbir paneli "otomatik" açmıyoruz.
         if (!hasAnyOpenFlag) {
             return [];
         }
 
-        // enabled !== false VE açık olanları topla
-        const openIds = cfg
+        const openIds = cfgArray
             .filter(c =>
                 c &&
                 c.enabled !== false && (
@@ -1655,11 +1659,9 @@ function getOpenPanelIdsFromConfig() {
             .map(c => c.id)
             .filter(Boolean);
 
-        // 🔴 Kullanıcı hepsini kapattıysa bile
-        // artık "en azından default paneli aç" yapmıyoruz.
         return openIds;
     } catch (e) {
-        console.error('solPanelConfig parse hatası (acikDurum):', e);
+        console.error('getOpenPanelIdsFromConfig hata:', e);
         return [];
     }
 }
@@ -2142,19 +2144,28 @@ function handleFullscreenChange() {
 
 /* 🔴 SOL PANEL GİZLE/GÖSTER – SADELEŞTİRİLMİŞ HALİ */
 function toggleLeftPanel() {
+    // Mobilde sol panel toggle çalışma, aynı kalsın
     if (window.matchMedia("(max-width: 768px)").matches) {
         return;
     }
 
+    // 🔴 Dashboard modu AÇIKKEN ve sol panel gizliyken
+    // "Sol paneli göster" butonu = Dashboard'u kapat
+    if (dashboardMode && solHidden) {
+        applyDashboardLayout(false);
+        return;
+    }
+
+    // Normal davranış: sadece sol paneli gizle/göster
     if (!solHidden) {
-        // Sadece sol paneli gizle, sağ paneli tam genişlik yap
+        // Sadece sol paneli gizle, sağ panel tam genişlik
         solPanel.style.display = 'none';
         sagPanel.style.width = '100%';
         leftPanelBtn.textContent = '➡️';
         leftPanelBtn.title = 'Sol Paneli Göster';
         solHidden = true;
     } else {
-        // Sol paneli tekrar göster, sağ paneli eski oranına çek
+        // Sol paneli göster, sağ paneli eski oranına çek
         solPanel.style.display = 'flex';
         if (window.matchMedia("(max-width: 1024px)").matches) {
             solPanel.style.width = '35%';
@@ -2168,13 +2179,12 @@ function toggleLeftPanel() {
         solHidden = false;
     }
 
-    // İçerik aynen kalır, sadece layout değişir
+    // Layout ayarları
     updateFixedHeaderPosition();
     setPanelOffsets();
-
-// Hasta bilgisi iframe yüksekliğini viewport değişince güncelle
     resizeHastaBilgisiFrame();
 }
+
 
 /* Aç/Kapa – hem mobil hem desktop için ortak */
 function toggleAccordion(event) {
