@@ -33,6 +33,11 @@
         .status-container {
             font-size: 12px;
             min-height: 18px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
         }
 
         .badge-ok {
@@ -42,7 +47,6 @@
             font-size: 11px;
             background: #ecfdf3;
             color: #15803d;
-            margin-left: 6px;
         }
         .badge-error {
             display: inline-block;
@@ -51,7 +55,28 @@
             font-size: 11px;
             background: #fef2f2;
             color: #b91c1c;
-            margin-left: 6px;
+        }
+
+        /* Sağ üstteki aksiyonlar (Kaydet + Kapat) */
+        .top-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Kapat butonu */
+        #closeConfigBtn {
+            background: #ff5c5c;
+            border: none;
+            color: white;
+            padding: 4px 7px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
         }
 
         /* Aç/kapatlı bölüm (accordion) */
@@ -59,7 +84,7 @@
             border-radius: 10px;
             border: 1px solid #e5e7eb;
             background: #f9fafb;
-            margin-top: 8px;
+            margin-top: 10px;
         }
 
         .section-header {
@@ -103,120 +128,6 @@
             transform: rotate(-90deg);
         }
 
-        .panel-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 8px;
-        }
-
-        /* ÜST BAŞLIK VE SATIRLAR AYNI GRID YAPISINI KULLANIYOR
-           [ Görünsün ] [ Pencere adı ] [ Açılışta açık ]
-        */
-        .panel-header,
-        .panel-item {
-            display: grid;
-            grid-template-columns: 70px minmax(0, 1fr) 130px;
-            align-items: center;
-            padding: 8px 10px;
-        }
-
-        /* Başlık satırı */
-        .panel-header {
-            margin-bottom: 4px;
-            padding-left: 10px;
-            padding-right: 10px;
-            font-size: 13px;
-            color: #374151;
-            font-weight: 600;
-        }
-
-        /* SATIR STİLLERİ */
-        .panel-item {
-            margin-bottom: 4px;
-            border-radius: 8px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            cursor: grab;
-            transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-        }
-
-        /* Orta kolon: pencere adı */
-        .panel-left {
-            grid-column: 2;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-left: -24px;
-        }
-
-        .drag-handle {
-            font-size: 18px;
-            user-select: none;
-            color: #9ca3af;
-            cursor: grab;
-        }
-        .panel-title {
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .panel-key {
-            font-size: 11px;
-            color: #9ca3af;
-        }
-
-        /* 1. kolon: Görünsün */
-        .col-visible {
-            grid-column: 1;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding-left: 0;
-            gap: 4px;
-        }
-
-        /* 3. kolon: Açılışta açık */
-        .col-default {
-            grid-column: 3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .ph-visible-label,
-        .ph-default-label {
-            font-size: 13px;
-        }
-
-        /* Checkboxlar */
-        .panel-enabled-checkbox,
-        .panel-open-checkbox,
-        #toggleAllVisible,
-        #toggleAllOpen {
-            width: 16px;
-            height: 16px;
-            margin: 0;
-            vertical-align: middle;
-        }
-
-        /* Drag sırasında SortableJS’in eklediği sınıflara stil */
-        .panel-item.sortable-chosen {
-            border-color: #0b3c61;
-            background: #eef2ff;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
-            transform: scale(1.01);
-            z-index: 10;
-        }
-        .panel-item.sortable-ghost {
-            opacity: 0.4;
-        }
-
-        .btn-row {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-top: 6px;
-        }
         .btn {
             border-radius: 999px;
             border: 1px solid transparent;
@@ -240,6 +151,212 @@
             background: #0d4979;
         }
 
+        .btn-sm {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        /* --- SOL PANEL LİSTESİ --- */
+        .panel-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 8px;
+        }
+
+        .panel-header,
+        .panel-item {
+            display: grid;
+            grid-template-columns: 70px minmax(0, 1fr) 130px;
+            align-items: center;
+            padding: 8px 10px;
+        }
+
+        .panel-header {
+            margin-bottom: 4px;
+            padding-left: 10px;
+            padding-right: 10px;
+            font-size: 13px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .panel-item {
+            margin-bottom: 4px;
+            border-radius: 8px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            cursor: grab;
+            transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .panel-left {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-left: -24px;
+        }
+
+        .drag-handle {
+            font-size: 18px;
+            user-select: none;
+            color: #9ca3af;
+            cursor: grab;
+        }
+        .panel-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .panel-key {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .col-visible {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 0;
+            gap: 4px;
+        }
+
+        .col-default {
+            grid-column: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .ph-visible-label,
+        .ph-default-label {
+            font-size: 13px;
+        }
+
+        .panel-enabled-checkbox,
+        .panel-open-checkbox,
+        #toggleAllVisible,
+        #toggleAllOpen,
+        .qa-enabled-checkbox,
+        #qaToggleAllVisible {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            vertical-align: middle;
+        }
+
+        .panel-item.sortable-chosen,
+        .qa-item.sortable-chosen {
+            border-color: #0b3c61;
+            background: #eef2ff;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+            transform: scale(1.01);
+            z-index: 10;
+        }
+        .panel-item.sortable-ghost,
+        .qa-item.sortable-ghost {
+            opacity: 0.4;
+        }
+
+        .section-btn-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        /* --- HIZLI ERİŞİM LİSTESİ --- */
+        .qa-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 8px;
+        }
+
+        .qa-header,
+        .qa-item {
+            display: grid;
+            grid-template-columns: 80px minmax(0, 1fr);
+            align-items: center;
+            padding: 8px 10px;
+        }
+
+        .qa-header {
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .qa-item {
+            margin-bottom: 4px;
+            border-radius: 8px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            cursor: grab;
+            transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .qa-visible {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .qa-main {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qa-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .qa-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .qa-key {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .qa-drag {
+            font-size: 16px;
+            color: #9ca3af;
+            cursor: grab;
+            margin-left: 4px;
+        }
+
+        .qa-align-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 10px;
+            margin: 4px 10px 8px;
+            font-size: 13px;
+            color: #374151;
+        }
+
+        .qa-align-options {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .qa-align-options label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
         @media (max-width: 600px) {
             .page {
                 margin: 8px;
@@ -260,6 +377,15 @@
             .panel-title {
                 font-size: 13px;
             }
+
+            .qa-header,
+            .qa-item {
+                grid-template-columns: 70px minmax(0, 1fr);
+            }
+
+            .qa-title {
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -267,22 +393,11 @@
 
 <div class="page">
 
-<button id="closeConfigBtn"
-    style="
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 10;
-        background: #ff5c5c;
-        border: none;
-        color: white;
-        padding: 4px 7px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 13px;
-    ">
-    ✖
-</button>
+    <!-- Sağ üst: Tümünü Kaydet + Çıkış -->
+    <div class="top-actions">
+        <button id="saveAllBtn" class="btn btn-primary">Tümünü Kaydet</button>
+        <button id="closeConfigBtn">✖</button>
+    </div>
 
     <!-- Üst açıklama: Mobile / Tablet / PC için Dr Hasta Başı Özelleştir -->
     <h1 id="mainTitle">Dr Hasta Başı Özelleştir</h1>
@@ -292,15 +407,14 @@
         <span id="statusBadge"></span>
     </div>
 
-    <!-- SOL PANEL BÖLÜMÜ (accordion) -->
-    <div class="section" id="solPanelSection">
+    <!-- SOL PANEL BÖLÜMÜ: BAŞLANGIÇTA KAPALI -->
+    <div class="section collapsed" id="solPanelSection">
         <button class="section-header" id="solPanelToggle" type="button">
             <span class="section-arrow">▼</span>
             <span class="section-title">Sol Panel</span>
         </button>
         <div class="section-body" id="solPanelBody">
 
-            <!-- ÜST BAŞLIK: Görünsün solda, ortada boş, sağda Açılışta açık -->
             <div class="panel-header">
                 <div class="col-visible">
                     <input type="checkbox" id="toggleAllVisible">
@@ -315,24 +429,59 @@
                 </div>
             </div>
 
-            <ul id="panelList" class="panel-list">
-                <!-- JS ile doldurulacak -->
-            </ul>
+            <ul id="panelList" class="panel-list"></ul>
 
-            <div class="btn-row">
-                <button id="resetBtn" class="btn btn-ghost">Varsayılanlara Dön</button>
-                <button id="saveBtn" class="btn btn-primary">Kaydet</button>
+            <div class="section-btn-row">
+                <button id="resetSolBtn" class="btn btn-ghost btn-sm">Sol Panelin Varsayılanlarını Getir</button>
             </div>
         </div>
     </div>
+
+    <!-- HIZLI ERİŞİM (2. SATIR) BÖLÜMÜ: BAŞLANGIÇTA KAPALI -->
+    <div class="section collapsed" id="quickSection">
+        <button class="section-header" id="quickToggle" type="button">
+            <span class="section-arrow">▼</span>
+            <span class="section-title">Hızlı Erişim Butonları</span>
+        </button>
+        <div class="section-body" id="quickBody">
+
+            <div class="qa-align-row">
+                <span><b>Buton Hizalaması:</b></span>
+                <div class="qa-align-options">
+                    <label>
+                        <input type="radio" name="qaAlign" value="left">
+                        Sola
+                    </label>
+                    <label>
+                        <input type="radio" name="qaAlign" value="center">
+                        Ortada
+                    </label>
+                    <label>
+                        <input type="radio" name="qaAlign" value="right" checked>
+                        Sağa
+                    </label>
+                </div>
+            </div>
+
+            <div class="qa-header">
+                <div class="qa-visible">
+                    <input type="checkbox" id="qaToggleAllVisible">
+                    <span class="ph-visible-label">Görünsün</span>
+                </div>
+                <div></div>
+            </div>
+
+            <ul id="quickList" class="qa-list"></ul>
+
+            <div class="section-btn-row">
+                <button id="resetQuickBtn" class="btn btn-ghost btn-sm">Hızlı Erişimin Varsayılanlarını Getir</button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-/**
- * Ekran genişliğine göre cihaz tipini belirler.
- * mode: 'desktop' | 'tablet' | 'mobile'
- * label: başlıkta gösterilecek (PC / Tablet / Mobile)
- */
 function detectDeviceMode() {
     const w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
     if (w <= 768) {
@@ -345,26 +494,20 @@ function detectDeviceMode() {
 }
 
 const DEVICE = detectDeviceMode();
-const ACTIVE_MODE = DEVICE.mode;   // 'desktop' | 'tablet' | 'mobile'
+const ACTIVE_MODE = DEVICE.mode;
 const MODE_LABEL = DEVICE.label;
 
-// Üst başlığı güncelle
 const mainTitleEl = document.getElementById('mainTitle');
 if (mainTitleEl) {
     mainTitleEl.textContent = `${MODE_LABEL} için Dr Hasta Başı Özelleştir`;
 }
 
-// Mode bilgisini göster
 const modeInfoEl = document.getElementById('modeInfo');
 if (modeInfoEl) {
-    modeInfoEl.textContent = `${MODE_LABEL} görünümü için Sol Panel ayarları`;
+    modeInfoEl.textContent = `${MODE_LABEL} görünümü için özelleştirme yapıyorsunuz`;
 }
 
-/**
- * Sol panelde kullanabileceğimiz tüm pencereler.
- * id: drhastabasi.html içindeki ID'ler
- * title: kullanıcıya görünen isim
- */
+/* ---------- SOL PANEL TANIMLARI ---------- */
 const ALL_PANELS = [
     { id: 'panel-hasta-bilgisi',  title: 'Hasta Bilgisi' },
     { id: 'panel-muayene',        title: 'Muayene Bilgileri' },
@@ -377,18 +520,22 @@ const ALL_PANELS = [
     { id: 'panel-randevu',        title: 'Randevu ve Kontroller' }
 ];
 
-// Çoklu profil için tek anahtar
-const STORAGE_KEY = 'solPanelConfig';
+const SOL_STORAGE_KEY   = 'solPanelConfig';
+const QUICK_STORAGE_KEY = 'quickAccessConfig';
 
-const panelListEl = document.getElementById('panelList');
-const saveBtn     = document.getElementById('saveBtn');
-const resetBtn    = document.getElementById('resetBtn');
-const statusBadge = document.getElementById('statusBadge');
+const panelListEl    = document.getElementById('panelList');
+const resetSolBtn    = document.getElementById('resetSolBtn');
 
-let sortableInstance = null;
+const quickListEl    = document.getElementById('quickList');
+const resetQuickBtn  = document.getElementById('resetQuickBtn');
 
-/** Varsayılan konfigürasyon (hepsi görünür, sadece ilki açık) */
-function getDefaultConfigArray() {
+const saveAllBtn     = document.getElementById('saveAllBtn');
+const statusBadge    = document.getElementById('statusBadge');
+
+let solSortableInstance   = null;
+let quickSortableInstance = null;
+
+function getDefaultSolConfigArray() {
     return ALL_PANELS.map((p, index) => ({
         id: p.id,
         enabled: true,
@@ -397,30 +544,14 @@ function getDefaultConfigArray() {
     }));
 }
 
-/**
- * localStorage'tan çoklu profil formatını okur.
- * Dönen değer:
- * {
- *   desktop: [...],
- *   tablet:  [...],
- *   mobile:  [...]
- * }
- */
-function loadRawMultiConfig() {
+function loadSolRawMultiConfig() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(SOL_STORAGE_KEY);
         if (!raw) {
-            // Hiç kayıt yoksa tüm modlar için boş obje döndür.
-            return {
-                desktop: null,
-                tablet: null,
-                mobile: null
-            };
+            return { desktop: null, tablet: null, mobile: null };
         }
-
         const parsed = JSON.parse(raw);
 
-        // Eski format: düz array -> tüm modlara aynı set
         if (Array.isArray(parsed)) {
             return {
                 desktop: parsed,
@@ -429,7 +560,6 @@ function loadRawMultiConfig() {
             };
         }
 
-        // Yeni format: object
         if (parsed && typeof parsed === 'object') {
             return {
                 desktop: Array.isArray(parsed.desktop) ? parsed.desktop : null,
@@ -438,40 +568,25 @@ function loadRawMultiConfig() {
             };
         }
 
-        // Bozuksa sıfırla
-        return {
-            desktop: null,
-            tablet: null,
-            mobile: null
-        };
+        return { desktop: null, tablet: null, mobile: null };
     } catch (e) {
         console.error('solPanelConfig parse hatası:', e);
-        return {
-            desktop: null,
-            tablet: null,
-            mobile: null
-        };
+        return { desktop: null, tablet: null, mobile: null };
     }
 }
 
-/** Aktif mode için normalize config dizisi döndürür */
-function loadConfigForActiveMode() {
-    const rawMulti = loadRawMultiConfig();
-
-    // Önce aktif mode için bak
+function loadSolConfigForActiveMode() {
+    const rawMulti = loadSolRawMultiConfig();
     let arr = rawMulti[ACTIVE_MODE];
 
-    // Aktif modda yoksa sırayla desktop/tablet/mobile fallback
     if (!Array.isArray(arr)) {
         arr = rawMulti.desktop || rawMulti.tablet || rawMulti.mobile || null;
     }
 
-    // Hâlâ yoksa varsayılan dizi
     if (!Array.isArray(arr)) {
-        return getDefaultConfigArray();
+        return getDefaultSolConfigArray();
     }
 
-    // Filtre + normalize
     const knownIds = new Set(ALL_PANELS.map(p => p.id));
     const result = [];
 
@@ -492,7 +607,6 @@ function loadConfigForActiveMode() {
         });
     }
 
-    // Eksik panelleri sona ekle
     const existingIds = new Set(result.map(r => r.id));
     for (const p of ALL_PANELS) {
         if (!existingIds.has(p.id)) {
@@ -505,7 +619,6 @@ function loadConfigForActiveMode() {
         }
     }
 
-    // En az bir tane açık & enabled olsun
     let firstOpenIndex = result.findIndex(r => r.enabled && r.acikDurum);
     if (firstOpenIndex === -1) {
         const firstEnabled = result.findIndex(r => r.enabled);
@@ -515,15 +628,20 @@ function loadConfigForActiveMode() {
         }
     }
 
-    return result;
+    // Görünsün seçili olanları üste al (stable)
+    const enabledArr = [];
+    const disabledArr = [];
+    for (const it of result) {
+        if (it.enabled) enabledArr.push(it);
+        else disabledArr.push(it);
+    }
+    return enabledArr.concat(disabledArr);
 }
 
-/** Config’i çoklu formatta kaydeder */
-function saveConfigForActiveMode(configArray) {
+function saveSolConfigForActiveMode(configArray) {
     try {
-        const rawMulti = loadRawMultiConfig();
+        const rawMulti = loadSolRawMultiConfig();
 
-        // Aktif mode'a yeni seti yaz
         rawMulti[ACTIVE_MODE] = configArray;
 
         const toStore = {
@@ -532,15 +650,13 @@ function saveConfigForActiveMode(configArray) {
             mobile:  rawMulti.mobile  || null
         };
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
-        showStatus('Ayarlar kaydedildi.', true);
+        localStorage.setItem(SOL_STORAGE_KEY, JSON.stringify(toStore));
     } catch (e) {
-        console.error('Config kaydedilirken hata:', e);
-        showStatus('Ayarlar kaydedilemedi!', false);
+        console.error('Sol config kaydedilirken hata:', e);
+        throw e;
     }
 }
 
-/** Küçük “kaydedildi” / “hata” rozeti */
 function showStatus(text, ok) {
     if (!statusBadge) return;
     statusBadge.innerHTML = '';
@@ -555,8 +671,8 @@ function showStatus(text, ok) {
     }, 2500);
 }
 
-/** Listeyi ekrana çizer */
-function renderList(config) {
+function renderSolList(config) {
+    if (!panelListEl) return;
     panelListEl.innerHTML = '';
 
     config.forEach(item => {
@@ -597,7 +713,6 @@ function renderList(config) {
         panelListEl.appendChild(li);
     });
 
-    // Master checkboxları güncelle
     const masterVisible = document.getElementById('toggleAllVisible');
     const masterOpen    = document.getElementById('toggleAllOpen');
 
@@ -610,12 +725,12 @@ function renderList(config) {
         masterOpen.checked = !anyClosed;
     }
 
-    initSortable();
-    attachConfigInteractions();
+    initSolSortable();
+    attachSolConfigInteractions();
 }
 
-function attachConfigInteractions() {
-    const items         = panelListEl.querySelectorAll('.panel-item');
+function attachSolConfigInteractions() {
+    const items         = panelListEl ? panelListEl.querySelectorAll('.panel-item') : [];
     const masterVisible = document.getElementById('toggleAllVisible');
     const masterOpen    = document.getElementById('toggleAllOpen');
 
@@ -675,8 +790,8 @@ function attachConfigInteractions() {
     }
 }
 
-/** Mevcut listedeki sırayı + checkbox durumlarını config'e çevir */
-function readConfigFromDOM() {
+function readSolConfigFromDOM() {
+    if (!panelListEl) return getDefaultSolConfigArray();
     const items = panelListEl.querySelectorAll('.panel-item');
     const config = [];
 
@@ -689,11 +804,10 @@ function readConfigFromDOM() {
             id,
             enabled:  checkboxVis  ? checkboxVis.checked  : true,
             acikDurum: checkboxOpen ? checkboxOpen.checked : false,
-            isDefault: false   // birazdan dolduracağız
+            isDefault: false
         });
     });
 
-    // "isDefault" için: önce açık & enabled bir panel bul, yoksa ilk enabled
     let defaultIndex = config.findIndex(c => c.enabled && c.acikDurum);
     if (defaultIndex === -1) {
         defaultIndex = config.findIndex(c => c.enabled);
@@ -707,18 +821,17 @@ function readConfigFromDOM() {
     return config;
 }
 
-/** SortableJS’i başlat (veya yeniden başlat) */
-function initSortable() {
-    if (!window.Sortable) {
-        console.error('SortableJS yüklenemedi.');
+function initSolSortable() {
+    if (!window.Sortable || !panelListEl) {
+        console.error('SortableJS veya panelList bulunamadı.');
         return;
     }
-    if (sortableInstance) {
-        sortableInstance.destroy();
-        sortableInstance = null;
+    if (solSortableInstance) {
+        solSortableInstance.destroy();
+        solSortableInstance = null;
     }
 
-    sortableInstance = new Sortable(panelListEl, {
+    solSortableInstance = new Sortable(panelListEl, {
         animation: 150,
         handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
@@ -727,32 +840,350 @@ function initSortable() {
     });
 }
 
-/** Başlatma */
-const initialConfig = loadConfigForActiveMode();
-renderList(initialConfig);
+/* ---------- HIZLI ERİŞİM TANIMLARI ---------- */
+const QUICK_ACTIONS = [
+    { id: 'qa-barkod',    icon: '📷', title: 'Barkod / Karekod Okut' },
+    { id: 'qa-recete',    icon: '💊', title: 'İlaç Reçetesi' },
+    { id: 'qa-not',       icon: '📝', title: 'Hasta Notu Ekle' },
+    { id: 'qa-rapor',     icon: '📄', title: 'Rapor Oluştur' },
+    { id: 'qa-lab',       icon: '🧪', title: 'Laboratuvar İstem' },
+    { id: 'qa-radyoloji', icon: '🩻', title: 'Radyoloji İstem' },
+    { id: 'qa-enabiz',    icon: '🌐', title: 'e-Nabız Klinik Bilgi' },
+    { id: 'qa-risk',      icon: '⚠️', title: 'Risk / Uyarı' },
+    { id: 'qa-acil',      icon: '🚨', title: 'Acil Durum' },
+    { id: 'qa-takvim',    icon: '📅', title: 'Takvim / Randevu' }
+];
 
-/** Kaydet butonu */
-if (saveBtn) {
-    saveBtn.addEventListener('click', () => {
-        const newConfig = readConfigFromDOM();
-        saveConfigForActiveMode(newConfig);
+function getDefaultQuickConfigArray() {
+    return QUICK_ACTIONS.map(a => ({
+        id: a.id,
+        enabled: true
+    }));
+}
 
-        setTimeout(() => {
-            window.location.href = 'drhastabasi.html';
-        }, 300);
+function getDefaultQuickAlign() {
+    return 'right';
+}
+
+function loadQuickRawMultiConfig() {
+    try {
+        const raw = localStorage.getItem(QUICK_STORAGE_KEY);
+        if (!raw) {
+            return { desktop: null, tablet: null, mobile: null };
+        }
+        const parsed = JSON.parse(raw);
+
+        if (Array.isArray(parsed)) {
+            return {
+                desktop: parsed,
+                tablet: parsed,
+                mobile: parsed
+            };
+        }
+
+        if (parsed && typeof parsed === 'object') {
+            return {
+                desktop: parsed.desktop || null,
+                tablet:  parsed.tablet  || null,
+                mobile:  parsed.mobile  || null
+            };
+        }
+
+        return { desktop: null, tablet: null, mobile: null };
+    } catch (e) {
+        console.error('quickAccessConfig parse hatası:', e);
+        return { desktop: null, tablet: null, mobile: null };
+    }
+}
+
+function normalizeQuickItems(arr) {
+    const knownIds = new Set(QUICK_ACTIONS.map(q => q.id));
+    const tmp = [];
+
+    for (const item of arr || []) {
+        if (!item || typeof item.id !== 'string') continue;
+        if (!knownIds.has(item.id)) continue;
+        tmp.push({
+            id: item.id,
+            enabled: item.enabled !== false
+        });
+    }
+
+    const existingIds = new Set(tmp.map(r => r.id));
+    for (const a of QUICK_ACTIONS) {
+        if (!existingIds.has(a.id)) {
+            tmp.push({
+                id: a.id,
+                enabled: true
+            });
+        }
+    }
+
+    // Görünsün seçili olanları üste al (stable)
+    const enabledArr = [];
+    const disabledArr = [];
+    for (const it of tmp) {
+        if (it.enabled) enabledArr.push(it);
+        else disabledArr.push(it);
+    }
+    return enabledArr.concat(disabledArr);
+}
+
+function loadQuickConfigForActiveMode() {
+    const rawMulti = loadQuickRawMultiConfig();
+    let block = rawMulti[ACTIVE_MODE];
+
+    if (Array.isArray(block)) {
+        return {
+            items: normalizeQuickItems(block),
+            align: getDefaultQuickAlign()
+        };
+    }
+
+    if (!block) {
+        if (Array.isArray(rawMulti.desktop) || (rawMulti.desktop && typeof rawMulti.desktop === 'object')) {
+            block = rawMulti.desktop;
+        } else if (Array.isArray(rawMulti.tablet) || (rawMulti.tablet && typeof rawMulti.tablet === 'object')) {
+            block = rawMulti.tablet;
+        } else if (Array.isArray(rawMulti.mobile) || (rawMulti.mobile && typeof rawMulti.mobile === 'object')) {
+            block = rawMulti.mobile;
+        }
+    }
+
+    let itemsArr;
+    let align;
+
+    if (Array.isArray(block)) {
+        itemsArr = normalizeQuickItems(block);
+        align = getDefaultQuickAlign();
+    } else if (block && typeof block === 'object') {
+        const rawItems = Array.isArray(block.items)
+            ? block.items
+            : getDefaultQuickConfigArray();
+        itemsArr = normalizeQuickItems(rawItems);
+        align = block.align || getDefaultQuickAlign();
+    } else {
+        itemsArr = normalizeQuickItems(getDefaultQuickConfigArray());
+        align = getDefaultQuickAlign();
+    }
+
+    return { items: itemsArr, align };
+}
+
+function saveQuickConfigForActiveMode(itemsArray, alignValue) {
+    try {
+        const rawMulti = loadQuickRawMultiConfig();
+
+        rawMulti[ACTIVE_MODE] = {
+            items: itemsArray,
+            align: alignValue || getDefaultQuickAlign()
+        };
+
+        const toStore = {
+            desktop: rawMulti.desktop || null,
+            tablet:  rawMulti.tablet  || null,
+            mobile:  rawMulti.mobile  || null
+        };
+
+        localStorage.setItem(QUICK_STORAGE_KEY, JSON.stringify(toStore));
+    } catch (e) {
+        console.error('Quick config kaydedilirken hata:', e);
+        throw e;
+    }
+}
+
+function renderQuickList(configParam) {
+    if (!quickListEl) return;
+    quickListEl.innerHTML = '';
+
+    let itemsConfig;
+    let align = getDefaultQuickAlign();
+
+    if (Array.isArray(configParam)) {
+        itemsConfig = normalizeQuickItems(configParam);
+    } else if (configParam && Array.isArray(configParam.items)) {
+        itemsConfig = normalizeQuickItems(configParam.items);
+        if (configParam.align) {
+            align = configParam.align;
+        }
+    } else {
+        itemsConfig = normalizeQuickItems(getDefaultQuickConfigArray());
+    }
+
+    itemsConfig.forEach(item => {
+        const def = QUICK_ACTIONS.find(q => q.id === item.id);
+        if (!def) return;
+
+        const li = document.createElement('li');
+        li.className = 'qa-item';
+        li.dataset.id = item.id;
+
+        const visId = 'qa-visible-' + item.id;
+
+        li.innerHTML = `
+            <div class="qa-visible">
+                <input type="checkbox"
+                       id="${visId}"
+                       class="qa-enabled-checkbox"
+                       ${item.enabled ? 'checked' : ''}>
+            </div>
+            <div class="qa-main">
+                <span class="qa-drag" title="Sürükle">☰</span>
+                <span class="qa-icon">${def.icon}</span>
+                <div>
+                    <div class="qa-title">${def.title}</div>
+                    <div class="qa-key">${def.id}</div>
+                </div>
+            </div>
+        `;
+
+        quickListEl.appendChild(li);
+    });
+
+    const masterVisible = document.getElementById('qaToggleAllVisible');
+    const items = quickListEl.querySelectorAll('.qa-item');
+
+    if (masterVisible) {
+        const anyOff = itemsConfig.some(c => !c.enabled);
+        masterVisible.checked = !anyOff;
+    }
+
+    const radios = document.querySelectorAll('input[name="qaAlign"]');
+    let found = false;
+    radios.forEach(r => {
+        if (r.value === align) {
+            r.checked = true;
+            found = true;
+        }
+    });
+    if (!found && radios.length) {
+        radios.forEach(r => { r.checked = (r.value === getDefaultQuickAlign()); });
+    }
+
+    items.forEach(li => {
+        const cb = li.querySelector('.qa-enabled-checkbox');
+        if (cb) {
+            cb.addEventListener('change', () => {
+                if (masterVisible) {
+                    const allOn = Array.from(items).every(row => {
+                        const c = row.querySelector('.qa-enabled-checkbox');
+                        return c && c.checked;
+                    });
+                    masterVisible.checked = allOn;
+                }
+            });
+        }
+    });
+
+    if (masterVisible) {
+        masterVisible.addEventListener('change', () => {
+            const check = masterVisible.checked;
+            const items2 = quickListEl.querySelectorAll('.qa-item');
+            items2.forEach(li => {
+                const c = li.querySelector('.qa-enabled-checkbox');
+                if (c) {
+                    c.checked = check;
+                    c.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+    }
+
+    initQuickSortable();
+}
+
+function readQuickConfigFromDOM() {
+    if (!quickListEl) return getDefaultQuickConfigArray();
+    const items = quickListEl.querySelectorAll('.qa-item');
+    const config = [];
+
+    items.forEach(li => {
+        const id          = li.dataset.id;
+        const checkboxVis = li.querySelector('.qa-enabled-checkbox');
+
+        config.push({
+            id,
+            enabled: checkboxVis ? checkboxVis.checked : true
+        });
+    });
+
+    return config;
+}
+
+function initQuickSortable() {
+    if (!window.Sortable || !quickListEl) {
+        console.error('SortableJS veya quickList bulunamadı.');
+        return;
+    }
+    if (quickSortableInstance) {
+        quickSortableInstance.destroy();
+        quickSortableInstance = null;
+    }
+
+    quickSortableInstance = new Sortable(quickListEl, {
+        animation: 150,
+        handle: '.qa-drag',
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        dragClass: 'sortable-drag',
     });
 }
 
-/** Varsayılanlara dön butonu */
-if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-        const def = getDefaultConfigArray();
-        renderList(def);
-        saveConfigForActiveMode(def);
+/* ---------- BAŞLATMA & BUTONLAR ---------- */
+
+const initialSolConfig   = loadSolConfigForActiveMode();
+renderSolList(initialSolConfig);
+
+const initialQuickConfig = loadQuickConfigForActiveMode();
+renderQuickList(initialQuickConfig);
+
+if (saveAllBtn) {
+    saveAllBtn.addEventListener('click', () => {
+        try {
+            const newSolConfig   = readSolConfigFromDOM();
+            const newQuickItems  = readQuickConfigFromDOM();
+
+            let newQuickAlign = getDefaultQuickAlign();
+            const radios = document.querySelectorAll('input[name="qaAlign"]');
+            radios.forEach(r => {
+                if (r.checked) {
+                    newQuickAlign = r.value;
+                }
+            });
+
+            saveSolConfigForActiveMode(newSolConfig);
+            saveQuickConfigForActiveMode(newQuickItems, newQuickAlign);
+
+            showStatus('Tüm ayarlar kaydedildi.', true);
+
+            setTimeout(() => {
+                window.location.href = 'drhastabasi.html';
+            }, 300);
+        } catch (e) {
+            showStatus('Ayarlar kaydedilirken hata oluştu.', false);
+        }
     });
 }
 
-// Sağ üstteki kapatma butonu
+if (resetSolBtn) {
+    resetSolBtn.addEventListener('click', () => {
+        const def = getDefaultSolConfigArray();
+        renderSolList(def);
+        saveSolConfigForActiveMode(def);
+        showStatus('Sol Panel varsayılanlara döndü.', true);
+    });
+}
+
+if (resetQuickBtn) {
+    resetQuickBtn.addEventListener('click', () => {
+        const defItems = getDefaultQuickConfigArray();
+        const defAlign = getDefaultQuickAlign();
+        renderQuickList({ items: defItems, align: defAlign });
+        saveQuickConfigForActiveMode(defItems, defAlign);
+        showStatus('Hızlı Erişim varsayılanlara döndü.', true);
+    });
+}
+
 const closeConfigBtn = document.getElementById('closeConfigBtn');
 if (closeConfigBtn) {
     closeConfigBtn.addEventListener('click', () => {
@@ -760,13 +1191,19 @@ if (closeConfigBtn) {
     });
 }
 
-// Sol Panel bölümünü aç/kapat
 const solPanelSection = document.getElementById('solPanelSection');
 const solPanelToggle  = document.getElementById('solPanelToggle');
-
 if (solPanelSection && solPanelToggle) {
     solPanelToggle.addEventListener('click', () => {
         solPanelSection.classList.toggle('collapsed');
+    });
+}
+
+const quickSection = document.getElementById('quickSection');
+const quickToggle  = document.getElementById('quickToggle');
+if (quickSection && quickToggle) {
+    quickToggle.addEventListener('click', () => {
+        quickSection.classList.toggle('collapsed');
     });
 }
 </script>

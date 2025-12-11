@@ -1034,18 +1034,7 @@ th {
 </div>
 
 
-<div id="hizli-aksiyon-bar">
-    <button class="icon-btn2" title="Barkod / Karekod Okut">📷</button>
-    <button class="icon-btn2" title="İlaç Reçetesi">💊</button>
-    <button class="icon-btn2" title="Hasta Notu Ekle">📝</button>
-    <button class="icon-btn2" title="Rapor Oluştur">📄</button>
-    <button class="icon-btn2" title="Laboratuvar İstem">🧪</button>
-    <button class="icon-btn2" title="Radyoloji İstem">🩻</button>
-    <button class="icon-btn2" title="e-Nabız Klinik Bilgi">🌐</button>
-    <button class="icon-btn2" title="Risk/Uyarı">⚠️</button>
-    <button class="icon-btn2" title="Acil Durum">🚨</button>
-    <button class="icon-btn2" title="Takvim / Randevu">📅</button>
-</div>
+<div id="hizli-aksiyon-bar"></div>
 
 <div class="main-content-wrapper" id="mainWrapper">
     <div class="sol-panel" id="solPanel">
@@ -1431,6 +1420,122 @@ function openPanelByType(partOfDataTuru) {
     }
     return false;
 }
+
+
+/* === HIZLI ERİŞİM BUTONLARI (2. SATIR) – CONFIG'E GÖRE === */
+
+const QUICK_ACTIONS = [
+    { id: 'qa-barkod',    icon: '📷', title: 'Barkod / Karekod Okut' },
+    { id: 'qa-recete',    icon: '💊', title: 'İlaç Reçetesi' },
+    { id: 'qa-not',       icon: '📝', title: 'Hasta Notu Ekle' },
+    { id: 'qa-rapor',     icon: '📄', title: 'Rapor Oluştur' },
+    { id: 'qa-lab',       icon: '🧪', title: 'Laboratuvar İstem' },
+    { id: 'qa-radyoloji', icon: '🩻', title: 'Radyoloji İstem' },
+    { id: 'qa-enabiz',    icon: '🌐', title: 'e-Nabız Klinik Bilgi' },
+    { id: 'qa-risk',      icon: '⚠️', title: 'Risk/Uyarı' },
+    { id: 'qa-acil',      icon: '🚨', title: 'Acil Durum' },
+    { id: 'qa-takvim',    icon: '📅', title: 'Takvim / Randevu' }
+];
+
+function getDefaultQuickConfig() {
+    return QUICK_ACTIONS.map(a => ({
+        id: a.id,
+        enabled: true
+    }));
+}
+
+// drhastabasiozellestir.html'in yazacağı yapı:
+// - Eski basit format: [ {id, enabled}, ... ]
+// - Yeni çoklu format: { desktop: [...], tablet: [...], mobile: [...] }
+function loadQuickConfigForMode() {
+    const raw = localStorage.getItem('quickAccessConfig');
+    if (!raw) return getDefaultQuickConfig();
+
+    let parsed;
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        return getDefaultQuickConfig();
+    }
+
+    let arr = null;
+
+    if (Array.isArray(parsed)) {
+        // Eski format
+        arr = parsed;
+    } else if (parsed && typeof parsed === 'object') {
+        // Çoklu profil
+        const mode = typeof getViewportMode === 'function'
+            ? getViewportMode()
+            : 'desktop';
+
+        if (Array.isArray(parsed[mode])) {
+            arr = parsed[mode];
+        } else if (Array.isArray(parsed.desktop)) {
+            arr = parsed.desktop;
+        } else if (Array.isArray(parsed.tablet)) {
+            arr = parsed.tablet;
+        } else if (Array.isArray(parsed.mobile)) {
+            arr = parsed.mobile;
+        }
+    }
+
+    if (!Array.isArray(arr)) {
+        return getDefaultQuickConfig();
+    }
+
+    const knownIds = new Set(QUICK_ACTIONS.map(a => a.id));
+    const result = [];
+
+    // Config'te gelen sıraya göre ekle
+    for (const item of arr) {
+        if (!item || typeof item.id !== 'string') continue;
+        if (!knownIds.has(item.id)) continue;
+
+        result.push({
+            id: item.id,
+            enabled: item.enabled !== false
+        });
+    }
+
+    // Eksik olan varsayılanları sona ekle
+    const existingIds = new Set(result.map(r => r.id));
+    for (const a of QUICK_ACTIONS) {
+        if (!existingIds.has(a.id)) {
+            result.push({ id: a.id, enabled: true });
+        }
+    }
+
+    return result;
+}
+
+function buildQuickActionsBar() {
+    const bar = document.getElementById('hizli-aksiyon-bar');
+    if (!bar) return;
+
+    const config = loadQuickConfigForMode();
+    const defMap = new Map(QUICK_ACTIONS.map(a => [a.id, a]));
+
+    // Eski statik butonları temizle
+    bar.innerHTML = '';
+
+    config.forEach(item => {
+        if (!item || item.enabled === false) return;
+
+        const def = defMap.get(item.id);
+        if (!def) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'icon-btn2';
+        btn.title = def.title;
+        btn.dataset.actionId = def.id;
+        btn.textContent = def.icon;
+
+        bar.appendChild(btn);
+    });
+}
+
+
 /* === SOL PANEL KONFİGÜRASYONU – AYAR SAYFASIYLA AYNI MANTIĞI KULLAN === */
 
 const SOL_PANEL_ALL_IDS = [
@@ -2677,10 +2782,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sol panel sırasını ve görünürlüğünü uygula
     applySolPanelConfig();
 
+    // Hızlı Erişim butonlarını config'e göre kur
+    buildQuickActionsBar();
+
     // Açılışta layout + default panel için
     handleResizeAndLoad();
 
-    // Ayar ekranından dönülüp config değişirse: sadece sol panel sırasını/görünürlüğünü güncelle
+    // Ayar ekranından dönülüp config değişirse: sol panel + hızlı menü güncellensin
     window.addEventListener('storage', (e) => {
         if (e.key === 'solPanelConfig') {
             applySolPanelConfig();
@@ -2688,6 +2796,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Özelleştir ekranından dönüldü → ilk açık pencereyi tekrar seçebilmek için sıfırla
             initialViewApplied = false;
             handleResizeAndLoad();
+        }
+
+        if (e.key === 'quickAccessConfig') {
+            buildQuickActionsBar();
         }
     });
 });
