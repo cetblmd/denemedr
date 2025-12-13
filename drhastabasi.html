@@ -919,6 +919,20 @@ border: 1px solid rgba(0,0,0,.08);
     white-space: nowrap;
   }
 
+  /* mobilde büyüteç → full açık kart */
+  .detail-modal-content .kutu > *:not(.kutu-baslik){
+    display: block !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .detail-modal-content .kutu .kutu-toggle-btn,
+  .detail-modal-content .kutu .ac-icon{
+    display: none !important;
+  }
+
+
+
 }
 
 
@@ -943,6 +957,9 @@ border: 1px solid rgba(0,0,0,.08);
   max-width: 320px;
 }
 #voice-command-box span{ font-weight: 800; }
+
+
+
 
 </style>
 
@@ -1217,7 +1234,7 @@ border: 1px solid rgba(0,0,0,.08);
         <!-- Açılır Ayarlar menüsü -->
         <button id="settingsMainBtn" type="button">⚙️ Ayarlar ▾</button>
         <div id="settingsSubmenu" class="settings-submenu">
-            <button type="button" onclick="goToCustomize()">🧩 BÖzelleştir</button>
+            <button type="button" onclick="goToCustomize()">🧩 Özelleştir</button>
             <!-- İlerde buraya başka alt ayarlar da ekleyebiliriz -->
         </div>
     </div>
@@ -1263,7 +1280,7 @@ border: 1px solid rgba(0,0,0,.08);
 <!-- Açılır Ayarlar + alt menü -->
 <button id="mobileSettingsMainBtn" type="button" title="Ayarlar">⚙️ Ayarlar ▾</button>
 <div id="mobileSettingsSubmenu" class="settings-submenu">
-    <button type="button" onclick="goToCustomize()">🧩 BÖzelleştir</button>
+    <button type="button" onclick="goToCustomize()">🧩 Özelleştir</button>
 </div>
         </div>
     </div>
@@ -2060,7 +2077,9 @@ function openCardDetailModal(kutu) {
     const clone = kutu.cloneNode(true);
     const ac = clone.querySelector('.ac-icon');
     if (ac) ac.remove();
-    clone.classList.remove('active'); 
+    clone.classList.add('active');
+    // Modal içinde aç/kapa okunu ve büyüteci kaldır (gereksiz)
+    clone.querySelectorAll('.kutu-toggle-btn, .ac-icon').forEach(el => el.remove()); 
     
     clone.querySelectorAll('.muayene-ozet').forEach(td => {
         td.style.display = 'block';
