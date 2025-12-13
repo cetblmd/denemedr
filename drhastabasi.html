@@ -1022,6 +1022,75 @@ border: 1px solid rgba(0,0,0,.08);
   outline-offset: 2px;
 }
 
+
+/* =========================================================
+   EDGE MENU PIN + RESIZE (v1)  -- SADECE EK
+   ========================================================= */
+:root{
+  --edge-left-w: 240px;
+  --edge-right-w: 240px;
+}
+
+/* Pin butonu (her iki kulakçık için sağ üst) */
+.edge-menu .edge-pin{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:26px;
+  height:26px;
+  border:none;
+  border-radius:10px;
+  background: rgba(0,0,0,.06);
+  cursor:pointer;
+  z-index: 6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.edge-menu .edge-pin:hover{ background: rgba(0,0,0,.10); }
+
+/* Resize tutamacı */
+.edge-menu .edge-resize{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:10px;
+  z-index: 7;
+  display:none;
+}
+.edge-menu.left  .edge-resize{ right:-5px; cursor: col-resize; }
+.edge-menu.right .edge-resize{ left:-5px;  cursor: col-resize; }
+
+/* Sabit (pinned) mod */
+body.left-pinned  .edge-menu.left{
+  width: var(--edge-left-w) !important;
+  box-shadow: var(--shadow);
+}
+body.right-pinned .edge-menu.right{
+  width: var(--edge-right-w) !important;
+  box-shadow: var(--shadow);
+}
+
+/* Pinned modda hover davranışını etkisizleştir */
+body.left-pinned  .edge-menu.left:hover{ width: var(--edge-left-w) !important; flex-direction: row; }
+body.right-pinned .edge-menu.right:hover{ width: var(--edge-right-w) !important; }
+
+/* Pinned modda tab yazısı kaybolsun */
+body.left-pinned  .edge-menu.left  .edge-menu-tab,
+body.right-pinned .edge-menu.right .edge-menu-tab{
+  display:none;
+}
+
+/* Pinned modda resize aktif */
+body.left-pinned  .edge-menu.left  .edge-resize,
+body.right-pinned .edge-menu.right .edge-resize{
+  display:block;
+}
+
+/* İçerik alanı menüye yer açsın */
+body.left-pinned  .main-content-wrapper{ margin-left: var(--edge-left-w); }
+body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
+
 </style>
 
 
@@ -1293,7 +1362,9 @@ border: 1px solid rgba(0,0,0,.08);
 
 </div>
 
-<div class="edge-menu left">
+<div class="edge-menu left" id="edgeLeft">
+    <button type="button" class="edge-pin" data-side="left" title="Menüyü sabitle / kulakçık moduna dön">📌</button>
+    <div class="edge-resize" data-side="left" aria-hidden="true"></div>
     <div class="edge-menu-tab">Sol Menü</div>
     <div class="edge-menu-content">
         <button>🏠 Ana Sayfa</button>
@@ -1310,7 +1381,9 @@ border: 1px solid rgba(0,0,0,.08);
 </div>
 
 
-<div class="edge-menu right">
+<div class="edge-menu right" id="edgeRight">
+    <button type="button" class="edge-pin" data-side="right" title="Menüyü sabitle / kulakçık moduna dön">📌</button>
+    <div class="edge-resize" data-side="right" aria-hidden="true"></div>
     <div class="edge-menu-tab">Hızlı İşlem</div>
     <div class="edge-menu-content">
         <button>🧾 Yeni Reçete</button>
@@ -3172,6 +3245,136 @@ function goToCustomize() {
   try { window.parent.location.href = url; return; } catch (e) {}
   window.location.href = url;
 }
+
+
+/* =========================================================
+   EDGE MENU PIN + RESIZE (v1)  -- SADECE EK
+   Not: Var olan butonlara dokunmaz.
+   ========================================================= */
+(function(){
+  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+
+  function getEdgeDefaults(){
+    return {
+      left:  { mode: "tab",    width: 240 },
+      right: { mode: "tab",    width: 240 }
+    };
+  }
+
+  function edgeLoad(){
+    try{
+      const raw = getConfigRaw("edgeMenuConfig");
+      if(!raw) return getEdgeDefaults();
+      const o = JSON.parse(raw);
+      return {
+        left:  { mode: (o.left?.mode  === "pinned" ? "pinned" : "tab"), width: +(o.left?.width  || 240) },
+        right: { mode: (o.right?.mode === "pinned" ? "pinned" : "tab"), width: +(o.right?.width || 240) }
+      };
+    }catch(e){
+      return getEdgeDefaults();
+    }
+  }
+
+  function edgeSave(cfg){
+    try{
+      localStorage.setItem(uKey("edgeMenuConfig"), JSON.stringify(cfg));
+    }catch(e){}
+  }
+
+  function edgeApply(cfg){
+    document.documentElement.style.setProperty("--edge-left-w",  (cfg.left.width  || 240) + "px");
+    document.documentElement.style.setProperty("--edge-right-w", (cfg.right.width || 240) + "px");
+
+    document.body.classList.toggle("left-pinned",  cfg.left.mode  === "pinned");
+    document.body.classList.toggle("right-pinned", cfg.right.mode === "pinned");
+  }
+
+  function setup(){
+    const leftMenu  = document.getElementById("edgeLeft")  || document.querySelector(".edge-menu.left");
+    const rightMenu = document.getElementById("edgeRight") || document.querySelector(".edge-menu.right");
+    if(!leftMenu && !rightMenu) return;
+
+    let cfg = edgeLoad();
+    cfg.left.width  = clamp(cfg.left.width  || 240, 180, 420);
+    cfg.right.width = clamp(cfg.right.width || 240, 180, 420);
+    edgeApply(cfg);
+
+    // PIN buttons
+    const pins = document.querySelectorAll(".edge-menu .edge-pin");
+    pins.forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const side = btn.getAttribute("data-side");
+        if(side === "left"){
+          cfg.left.mode = (cfg.left.mode === "pinned") ? "tab" : "pinned";
+        }else{
+          cfg.right.mode = (cfg.right.mode === "pinned") ? "tab" : "pinned";
+        }
+        edgeSave(cfg);
+        edgeApply(cfg);
+      });
+    });
+
+    // Resize drag
+    function attachResize(resizeEl, side, menuEl){
+      let dragging = false;
+
+      const move = (ev)=>{
+        if(!dragging) return;
+        const x = (ev.touches ? ev.touches[0].clientX : ev.clientX);
+        const rect = menuEl.getBoundingClientRect();
+
+        let w = 240;
+        if(side === "left"){
+          w = clamp(x - rect.left, 180, 420);
+          cfg.left.width = w;
+        }else{
+          w = clamp(rect.right - x, 180, 420);
+          cfg.right.width = w;
+        }
+        edgeApply(cfg);
+      };
+
+      const up = ()=>{
+        if(!dragging) return;
+        dragging = false;
+        edgeSave(cfg);
+        window.removeEventListener("mousemove", move);
+        window.removeEventListener("mouseup", up);
+        window.removeEventListener("touchmove", move);
+        window.removeEventListener("touchend", up);
+      };
+
+      const down = (ev)=>{
+        // sadece pinned modda
+        if(side === "left"  && cfg.left.mode  !== "pinned") return;
+        if(side === "right" && cfg.right.mode !== "pinned") return;
+
+        dragging = true;
+        window.addEventListener("mousemove", move);
+        window.addEventListener("mouseup", up);
+        window.addEventListener("touchmove", move, {passive:true});
+        window.addEventListener("touchend", up);
+        ev.preventDefault && ev.preventDefault();
+      };
+
+      resizeEl.addEventListener("mousedown", down);
+      resizeEl.addEventListener("touchstart", down, {passive:false});
+    }
+
+    const leftResize  = leftMenu ? leftMenu.querySelector(".edge-resize") : null;
+    const rightResize = rightMenu ? rightMenu.querySelector(".edge-resize") : null;
+
+    if(leftMenu && leftResize)  attachResize(leftResize,  "left",  leftMenu);
+    if(rightMenu && rightResize) attachResize(rightResize, "right", rightMenu);
+  }
+
+  // mevcut JS'i bozmamak için güvenli bağla
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", setup);
+  }else{
+    setup();
+  }
+})();
 
 </script>
 
