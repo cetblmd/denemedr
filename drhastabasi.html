@@ -861,19 +861,32 @@ border: 1px solid rgba(0,0,0,.08);
   }
 
 
-  /* 1. satır: alt alta diz */
+  /* 1. satır: wrap açık kalsın (gerekirse 2. satıra iner) */
   #hasta-ozet{
     flex-wrap: wrap;
     align-items: flex-start;
   }
 
-  /* Hasta bilgisi tam satır */
+  /* Hasta bilgisi (sol) satırda kalsın, gerektiğinde daralsın */
   #hasta-ozet .hasta-bilgi{
-    flex: 0 0 100%;
-    max-width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
-  /* SGK / e-Nabız / İlaç / SİNA butonları alt satıra */
+  /* Logo: varsayılan olarak 1. satırın en sağı */
+  #hasta-ozet .hasta-mid{
+    display:flex !important;     /* önceki display:none'i ezer */
+    flex: 0 0 auto;
+    margin-left: auto;           /* 1. satırda sağa iter */
+    align-self: flex-start;
+  }
+
+  /* Eğer logo 2. satıra düşerse, sola yasla (JS class ile) */
+  #hasta-ozet.logo-wrapped .hasta-mid{
+    margin-left: 0;
+  }
+
+  /* Butonlar: her zaman 2. satır (tam genişlik) */
   #hasta-ozet .ust-butons{
     flex: 0 0 100%;
     max-width: 100%;
@@ -881,24 +894,19 @@ border: 1px solid rgba(0,0,0,.08);
     margin-top: 6px;
 
     justify-content: flex-end; /* sağda kalsın */
-  }
-
-  /* 1. satırda buton bloğu tam genişlik olsun */
-  #hasta-ozet .ust-butons{
     width: 100%;
-    margin-left: 0;
-    justify-content: flex-end;
-    flex-wrap: wrap;        /* gerekiyorsa alta insin */
+    flex-wrap: wrap;
     gap: 6px;
   }
 
   /* SGK/e-Nabız/İlaç/SİNA grubu taşmasın */
   #hasta-ozet .btn-group.primary-actions{
     display: flex;
-    flex-wrap: wrap;        /* 🔴 kritik */
+    flex-wrap: wrap;
     justify-content: flex-end;
     max-width: 100%;
     gap: 6px;
+    row-gap: 4px;
   }
 
   /* Butonlar ekrandan dışarı taşmasın */
@@ -906,20 +914,11 @@ border: 1px solid rgba(0,0,0,.08);
   #hasta-ozet .btn-group.primary-actions .enabiz-btn{
     max-width: 100%;
     flex: 0 0 auto;
-  }
-
-  /* Alt satıra inen butonlar biraz daha sıkı dursun */
-  #hasta-ozet .btn-group.primary-actions{
-    row-gap: 4px;
-  }
-
-  /* Buton yazıları çok uzunsa taşmayı önle */
-  #hasta-ozet .btn-group.primary-actions button,
-  #hasta-ozet .btn-group.primary-actions .enabiz-btn{
     white-space: nowrap;
   }
 
   /* mobilde büyüteç → full açık kart */
+ → full açık kart */
   .detail-modal-content .kutu > *:not(.kutu-baslik){
     display: block !important;
     max-height: none !important;
@@ -931,7 +930,14 @@ border: 1px solid rgba(0,0,0,.08);
     display: none !important;
   }
 
-
+  .app-logo{
+    width:34px;
+    height:34px;
+  }
+  .app-logo img{
+    width:20px;
+    height:20px;
+  }
 
 }
 
@@ -959,15 +965,72 @@ border: 1px solid rgba(0,0,0,.08);
 #voice-command-box span{ font-weight: 800; }
 
 
+.app-logo{
+  width:40px;
+  height:40px;
+  min-width:40px;
+  min-height:40px;
+  border-radius:50%;
+  background:#f3f4f6; /* ChatGPT light gray */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 40px;
+}
 
+.app-logo img{
+  width:40px;
+  height:40px;
+  object-fit:contain;
+  display:block;
+}
+
+
+
+/* (devre dışı) eski absolute-ortala logo yaklaşımı kaldırıldı */
+/* === LOGO: Hasta özeti bitişi ile sağ butonlar arasının ortası === */
+#hasta-ozet .hasta-bilgi{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex: 0 1 auto;    /* büyüyebilir ama sağ tarafı ezmesin */
+  min-width: 0;
+}
+#hasta-ozet .hasta-mid{
+  flex: 1 1 auto;    /* iki taraf arasındaki boşluğu taşır */
+  min-width: 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+}
+
+/* Mobilde alan daralınca logo gizlensin (çakışmayı önler) */
+@media (max-width:768px){
+  #hasta-ozet .hasta-mid{ display:none; }
+}
+
+
+/* === Bilmed logo link (sadece tıklama için) === */
+#hasta-ozet .hasta-mid{ pointer-events:auto; }
+#hasta-ozet .bilmed-link{
+  text-decoration:none;
+  cursor:pointer;
+}
+#hasta-ozet .bilmed-link:focus-visible{
+  outline: 2px solid rgba(16,163,127,.45);
+  outline-offset: 2px;
+}
 
 </style>
 
 
 </head>
 <body>
+
+
 <div id="hasta-ozet">
-    <div style="display:flex; align-items:center; gap:10px;">
+    <div class="hasta-bilgi" style="display:flex; align-items:center; gap:10px;">
                 <div class="hasta-avatar" aria-hidden="true">
                     <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
                         <defs>
@@ -982,6 +1045,12 @@ border: 1px solid rgba(0,0,0,.08);
                     </svg>
                 </div>
         <span>Ahmet Yılmaz - 35 / Erkek</span>
+    </div>
+
+    <div class="hasta-mid" aria-hidden="true">
+        <a class="app-logo bilmed-link" href="https://www.bilmed.com.tr/" target="_blank" rel="noopener" aria-label="Bilmed web sitesi">
+        <img src="assets/bilmed-logo.png" alt="Bilmed">
+    </a>
     </div>
 
     <div class="ust-butons">
@@ -1295,6 +1364,84 @@ border: 1px solid rgba(0,0,0,.08);
 </div>
 
 <script>
+
+// === Mobile logo wrap detector (logo 2. satıra düşerse sola yasla) ===
+function updateMobileLogoWrap(){
+  try{
+    const h = document.getElementById('hasta-ozet');
+    if(!h) return;
+    if(window.innerWidth > 768){
+      h.classList.remove('logo-wrapped');
+      return;
+    }
+    const left = h.querySelector('.hasta-bilgi');
+    const mid  = h.querySelector('.hasta-mid');
+    if(!left || !mid) return;
+    const wrapped = mid.offsetTop > left.offsetTop;
+    h.classList.toggle('logo-wrapped', wrapped);
+  }catch(e){}
+}
+window.addEventListener('resize', updateMobileLogoWrap);
+window.addEventListener('load', updateMobileLogoWrap);
+
+
+
+// ==============================
+// USER CONTEXT (TEMP)
+// Gerçek ortamda backend unique PersonelID basacak.
+// Şimdilik test için: ?PersonelID=999 veya window.__HBYS_PERSONEL_ID veya fallback 999
+// ==============================
+const CONFIG_VERSION = 1;
+
+function getPersonelId() {
+  try {
+    const p = new URLSearchParams(window.location.search).get("PersonelID");
+    if (p && String(parseInt(p, 10)) === p.trim()) return parseInt(p, 10);
+  } catch (e) {}
+  if (typeof window.__HBYS_PERSONEL_ID !== "undefined" && window.__HBYS_PERSONEL_ID !== null) {
+    const n = parseInt(window.__HBYS_PERSONEL_ID, 10);
+    if (!isNaN(n)) return n;
+  }
+  return 999;
+}
+
+function uKey(baseKey) {
+  // v1 ile başlıyoruz; gerçek ortama geçince v2/v3...
+  return `drhb:v${CONFIG_VERSION}:p${getPersonelId()}:${baseKey}`;
+}
+
+// ==============================
+
+// ==============================
+// CONFIG SOURCE (v1)
+// Öncelik: DB inject (varsa) > localStorage
+// Not: Inject edilen değer boş string ise YOK sayılır.
+// ==============================
+function getInjectedConfigRaw(baseKey){
+  const pid = getPersonelId();
+
+  // 1) Personel bazlı map: { [pid]: { key: "json-string", ... } }
+  if (window.__HBYS_CONFIG_V1_BY_PERSONEL && window.__HBYS_CONFIG_V1_BY_PERSONEL[pid]){
+    const v = window.__HBYS_CONFIG_V1_BY_PERSONEL[pid][baseKey];
+    if (typeof v === "string" && v.trim() !== "") return v;
+  }
+
+  // 2) Genel map: { key: "json-string", ... }
+  if (window.__HBYS_CONFIG_V1 && typeof window.__HBYS_CONFIG_V1[baseKey] === "string"){
+    const v = window.__HBYS_CONFIG_V1[baseKey];
+    if (v.trim() !== "") return v;
+  }
+
+  return null;
+}
+
+function getConfigRaw(baseKey){
+  const injected = getInjectedConfigRaw(baseKey);
+  if (injected !== null) return injected;
+  return localStorage.getItem(uKey(baseKey));
+}
+
+
 const mainWrapper = document.getElementById('mainWrapper');
 const solPanel    = document.getElementById('solPanel');
 const sagPanel    = document.getElementById('sagPanel');
@@ -1326,7 +1473,7 @@ const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
 
 const inceSplitter = document.getElementById("inceSplitter");
 const MIN_INCE_WIDTH = 220;
-const STORAGE_KEY_INCE_WIDTH = "incePanelWidthPx";
+const STORAGE_KEY_INCE_WIDTH = uKey("incePanelWidthPx");
 
 
 let solHidden = false;
@@ -1483,7 +1630,7 @@ function loadQuickConfigForMode() {
         align: DEFAULT_ALIGN
     });
 
-    const raw = localStorage.getItem('quickAccessConfig');
+    const raw = getConfigRaw('quickAccessConfig');
     if (!raw) return defaultResult();
 
     let parsed;
@@ -1583,6 +1730,23 @@ if (cfg.barVisible === false) {
 
         bar.appendChild(btn);
     });
+
+
+    // Fail-safe: config bozuk/boş gelirse defaultları bas (2. satır asla boş kalmasın)
+    if (bar.style.display !== 'none' && bar.children.length === 0) {
+        const defaults = getDefaultQuickConfig(); // hepsi enabled
+        defaults.forEach(item => {
+            const def = defMap.get(item.id);
+            if (!def) return;
+            const btn = document.createElement('button');
+            btn.className = 'icon-btn2';
+            btn.title = def.title;
+            btn.dataset.actionId = def.id;
+            btn.textContent = def.icon;
+            bar.appendChild(btn);
+        });
+    }
+
 }
 
 
@@ -1601,7 +1765,7 @@ const SOL_PANEL_ALL_IDS = [
 ];
 
 function loadSolPanelConfigNormalized() {
-    const STORAGE_KEY = 'solPanelConfig';
+    const STORAGE_KEY = uKey('solPanelConfig');
     const mode = getViewportMode ? getViewportMode() : 'desktop';
 
     const defaultConfig = () =>
@@ -1612,7 +1776,7 @@ function loadSolPanelConfigNormalized() {
         }));
 
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = getConfigRaw('solPanelConfig');
         if (!raw) return defaultConfig();
 
         const parsed = JSON.parse(raw);
@@ -1763,10 +1927,10 @@ function getDefaultPanelIdFromConfig() {
 }
 
 function getOpenPanelIdsFromConfig() {
-    const STORAGE_KEY = 'solPanelConfig';
+    const STORAGE_KEY = uKey('solPanelConfig');
     const mode = getViewportMode ? getViewportMode() : 'desktop';
 
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = getConfigRaw('solPanelConfig');
     if (!raw) return [];
 
     try {
@@ -1822,7 +1986,7 @@ function getOpenPanelIdsFromConfig() {
 }
 
 function getDefaultOpenPanelIdFromConfig() {
-    const raw = localStorage.getItem('solPanelConfig');
+    const raw = getConfigRaw('solPanelConfig');
     if (!raw) return null;
 
     try {
@@ -2913,7 +3077,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ayar ekranından dönülüp config değişirse: sol panel + hızlı menü güncellensin
     window.addEventListener('storage', (e) => {
-        if (e.key === 'solPanelConfig') {
+        if (e.key === uKey('solPanelConfig')) {
             applySolPanelConfig();
 
             // Özelleştir ekranından dönüldü → ilk açık pencereyi tekrar seçebilmek için sıfırla
@@ -2921,7 +3085,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleResizeAndLoad();
         }
 
-        if (e.key === 'quickAccessConfig') {
+        if (e.key === uKey('quickAccessConfig')) {
             buildQuickActionsBar();
         }
     });
@@ -3001,7 +3165,7 @@ document.addEventListener("mouseup", () => {
 
 
 function goToCustomize() {
-  const url = "drhastabasiozellestir.html";
+  const url = `drhastabasiozellestir.html?PersonelID=${getPersonelId()}`;
 
   // iframe/webview senaryoları için en garantili sıra:
   try { window.top.location.href = url; return; } catch (e) {}

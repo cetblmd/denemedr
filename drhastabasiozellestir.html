@@ -507,6 +507,73 @@ if (mainTitleEl) {
     mainTitleEl.textContent = `${MODE_LABEL} için Dr Hasta Başı Özelleştir`;
 }
 
+
+/* =======================
+   v1 + PersonelID Config IO
+   - Okuma önceliği: DB inject > localStorage
+   - Boş / parse edilemeyen config => yok say (defaultlara düş)
+   ======================= */
+function getPersonelId() {
+    // 1) URL parametresi: ?PersonelID=123
+    try {
+        const p = new URLSearchParams(window.location.search).get("PersonelID");
+        if (p && String(parseInt(p, 10)) === p.trim()) return parseInt(p, 10);
+    } catch (e) {}
+    // 2) Global: gerçek ortamda buradan verilecek
+    if (window.__HBYS_PERSONEL_ID) return window.__HBYS_PERSONEL_ID;
+    // 3) Test fallback
+    return 999;
+}
+const PERSONEL_ID = getPersonelId();
+
+function uKey(baseKey) {
+    return `drhb:v1:p${PERSONEL_ID}:${baseKey}`;
+}
+
+// DB inject (opsiyonel): window.__HBYS_CONFIG_V1_BY_PERSONEL[pid][baseKey] veya window.__HBYS_CONFIG_V1[baseKey]
+function cfgGetRaw(baseKey) {
+    try {
+        const byP = window.__HBYS_CONFIG_V1_BY_PERSONEL;
+        if (byP && byP[PERSONEL_ID] && typeof byP[PERSONEL_ID][baseKey] !== "undefined") {
+            const v = byP[PERSONEL_ID][baseKey];
+            if (typeof v === "string" && v.trim() === "") return null;
+            return (typeof v === "string") ? v : JSON.stringify(v);
+        }
+        const g = window.__HBYS_CONFIG_V1;
+        if (g && typeof g[baseKey] !== "undefined") {
+            const v = g[baseKey];
+            if (typeof v === "string" && v.trim() === "") return null;
+            return (typeof v === "string") ? v : JSON.stringify(v);
+        }
+    } catch (e) {}
+    try {
+        const v = localStorage.getItem(uKey(baseKey));
+        if (typeof v === "string" && v.trim() === "") return null;
+        return v;
+    } catch (e) {
+        return null;
+    }
+}
+
+function cfgSetRaw(baseKey, rawValue) {
+    // rawValue string olmalı (JSON.stringify ile)
+    const persist = (window.__HBYS_PERSIST_TO_LOCALSTORAGE !== false);
+    try {
+        if (persist) localStorage.setItem(uKey(baseKey), rawValue);
+    } catch (e) {}
+
+    // DB’ye yazma hook’u (opsiyonel)
+    try {
+        if (typeof window.__HBYS_SAVE_CONFIG === "function") {
+            window.__HBYS_SAVE_CONFIG(PERSONEL_ID, baseKey, rawValue);
+        }
+    } catch (e) {}
+}
+
+function returnToMain() {
+    window.location.href = `drhastabasi.html?PersonelID=${PERSONEL_ID}`;
+}
+
 const modeInfoEl = document.getElementById('modeInfo');
 if (modeInfoEl) {
     modeInfoEl.textContent = `${MODE_LABEL} görünümü için özelleştirme yapıyorsunuz`;
@@ -525,8 +592,8 @@ const ALL_PANELS = [
     { id: 'panel-randevu',        title: 'Randevu ve Kontroller' }
 ];
 
-const SOL_STORAGE_KEY   = 'solPanelConfig';
-const QUICK_STORAGE_KEY = 'quickAccessConfig';
+const SOL_STORAGE_KEY   = 'solPanelConfig'; // baseKey (user-scoped saklanır)
+const QUICK_STORAGE_KEY = 'quickAccessConfig'; // baseKey (user-scoped saklanır)
 
 const panelListEl    = document.getElementById('panelList');
 const resetSolBtn    = document.getElementById('resetSolBtn');
@@ -551,7 +618,7 @@ function getDefaultSolConfigArray() {
 
 function loadSolRawMultiConfig() {
     try {
-        const raw = localStorage.getItem(SOL_STORAGE_KEY);
+        const raw = cfgGetRaw(SOL_STORAGE_KEY);
         if (!raw) {
             return { desktop: null, tablet: null, mobile: null };
         }
@@ -655,7 +722,7 @@ function saveSolConfigForActiveMode(configArray) {
             mobile:  rawMulti.mobile  || null
         };
 
-        localStorage.setItem(SOL_STORAGE_KEY, JSON.stringify(toStore));
+        cfgSetRaw(SOL_STORAGE_KEY, JSON.stringify(toStore));
     } catch (e) {
         console.error('Sol config kaydedilirken hata:', e);
         throw e;
@@ -872,7 +939,7 @@ function getDefaultQuickAlign() {
 
 function loadQuickRawMultiConfig() {
     try {
-        const raw = localStorage.getItem(QUICK_STORAGE_KEY);
+        const raw = cfgGetRaw(QUICK_STORAGE_KEY);
         if (!raw) {
             return { desktop: null, tablet: null, mobile: null };
         }
@@ -994,7 +1061,7 @@ function saveQuickConfigForActiveMode(itemsArray, alignValue, barVisible) {
             mobile:  rawMulti.mobile  || null
         };
 
-        localStorage.setItem(QUICK_STORAGE_KEY, JSON.stringify(toStore));
+        cfgSetRaw(QUICK_STORAGE_KEY, JSON.stringify(toStore));
     } catch (e) {
         console.error('Quick config kaydedilirken hata:', e);
         throw e;
@@ -1178,7 +1245,7 @@ if (saveAllBtn) {
             showStatus('Tüm ayarlar kaydedildi.', true);
 
             setTimeout(() => {
-                window.location.href = 'drhastabasi.html';
+                returnToMain();
             }, 300);
         } catch (e) {
             showStatus('Ayarlar kaydedilirken hata oluştu.', false);
@@ -1208,7 +1275,7 @@ if (resetQuickBtn) {
 const closeConfigBtn = document.getElementById('closeConfigBtn');
 if (closeConfigBtn) {
     closeConfigBtn.addEventListener('click', () => {
-        window.location.href = 'drhastabasi.html';
+        returnToMain();
     });
 }
 
