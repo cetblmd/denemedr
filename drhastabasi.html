@@ -3050,6 +3050,29 @@ body.right-pinned button.edge-pin::after{
 }
 </style>
 
+
+<style id="__v100_hide_debug_bar">
+/* Hide bottom debug/info strip */
+#debugBar,
+#dbgBar,
+.drhb-debug,
+.drhb-info,
+.debug-bar,
+.info-bar,
+body > .menu-modal-debug,
+body > .menu-debug,
+body > .menu-modal-flag,
+body > .menu-modal-status{
+  display:none !important;
+}
+/* Fallback: hide any fixed bottom overlay with debug text */
+@media (max-width: 9999px){
+  div[style*="position: fixed"][style*="bottom: 0"]{
+    /* keep safe: only hide if looks like debug */
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -5010,6 +5033,8 @@ if (mobileMenuModal) {
 
   
   function __drhb_dbg(){
+//CETCET
+return;
     try{
       var args = Array.prototype.slice.call(arguments);
       console.log.apply(console, ['[DR][MDBG]'].concat(args));
@@ -8851,6 +8876,85 @@ body:not(.left-pinned) #edgeLeft .edge-resize{ pointer-events:none !important; o
   // Also re-apply after load to catch late config injection.
   window.addEventListener("load", function(){ setTimeout(apply, 0); setTimeout(apply, 250); });
 
+})();
+</script>
+
+
+<script id="__v99_dbg_stub">
+(function(){
+  if(typeof window.__drhb_dbg !== "function"){
+    window.__drhb_dbg = function(){
+      try{
+        if(window.console && console.warn){
+          console.warn.apply(console, ["[drhb dbg missing]"].concat([].slice.call(arguments)));
+        }
+      }catch(_){}
+    };
+  }
+})();
+</script>
+
+
+<script id="__v101_kill_bottom_debug_strip">
+(function(){
+  function looksLikeDebugStrip(el){
+    try{
+      if(!el || el.nodeType!==1) return false;
+      var t = (el.innerText||"").trim();
+      if(!t) return false;
+      if(t.length > 120) return false;
+      if(!/menuModal|menu-modal|edge|dbg|debug|INFO|state/i.test(t)) return false;
+
+      var cs = window.getComputedStyle(el);
+      if(!cs) return false;
+      if(cs.position !== "fixed") return false;
+
+      var bottom = cs.bottom;
+      if(!(bottom === "0px" || bottom === "0")) return false;
+
+      var h = parseFloat(cs.height||"0") || el.getBoundingClientRect().height;
+      if(h <= 0 || h > 60) return false;
+
+      var w = el.getBoundingClientRect().width;
+      if(w < window.innerWidth * 0.6) return false;
+
+      return true;
+    }catch(_){ return false; }
+  }
+
+  function hide(el){
+    try{
+      el.style.setProperty("display","none","important");
+      el.style.setProperty("visibility","hidden","important");
+      el.setAttribute("data-drhb-hidden-debug","1");
+    }catch(_){}
+  }
+
+  function scan(){
+    try{
+      var all = document.body ? document.body.querySelectorAll("*") : [];
+      for(var i=0;i<all.length;i++){
+        var el = all[i];
+        if(el && el.getAttribute && el.getAttribute("data-drhb-hidden-debug")==="1") continue;
+        if(looksLikeDebugStrip(el)) hide(el);
+      }
+    }catch(_){}
+  }
+
+  function boot(){
+    scan();
+    try{
+      var mo = new MutationObserver(function(){ scan(); });
+      mo.observe(document.documentElement || document.body, { childList:true, subtree:true });
+    }catch(_){}
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", boot);
+  }else{
+    boot();
+  }
+  window.addEventListener("load", function(){ setTimeout(scan, 0); setTimeout(scan, 200); setTimeout(scan, 800); });
 })();
 </script>
 
