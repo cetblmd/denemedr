@@ -65,6 +65,12 @@ function __drhb_renderEdgeItems(side, reason, edgeW){
       grid.style.setProperty("--micro-h", microH + "px");
     }catch(_){}
 
+    var __edgeTileStyles = null;
+    try{ __edgeTileStyles = (state && state.tileStyles && typeof state.tileStyles==="object") ? state.tileStyles : null; }catch(_){}
+    if(!__edgeTileStyles){
+      try{ __edgeTileStyles = (__tileStyles && typeof __tileStyles==="object") ? __tileStyles : null; }catch(_){ __edgeTileStyles = null; }
+    }
+
     var st = {
       grid: grid,
       placements: placements,
@@ -76,7 +82,7 @@ function __drhb_renderEdgeItems(side, reason, edgeW){
         return cat.get(cid) || cat.get(String(id)) || null;
       },
       getTileSizePx: function(id){ return tileSizePxFromEdge(state, id, mk); },
-      tileStyles: (__tileStyles && typeof __tileStyles==="object") ? __tileStyles : null
+      tileStyles: (__edgeTileStyles && typeof __edgeTileStyles==="object") ? __edgeTileStyles : null
     };
 
     DRHB.AFNK.renderPlacements(st,{
@@ -86,7 +92,7 @@ function __drhb_renderEdgeItems(side, reason, edgeW){
       showGrid: false,
       styleFor: function(id){
         try{
-          var ts = (__tileStyles && typeof __tileStyles==="object") ? __tileStyles : null;
+          var ts = (__edgeTileStyles && typeof __edgeTileStyles==="object") ? __edgeTileStyles : null;
           if(!ts) return null;
           var cid = (window.DRHB && typeof DRHB.canonId==="function") ? DRHB.canonId(id) : String(id);
           return ts[cid] || ts[String(id)] || ts[id] || null;
@@ -286,6 +292,62 @@ var raw = null;
   }catch(e){ try{ console.error("[DR][mobileMenu] render failed", e); }catch(_){ } }
 }
 try{ window.__drhb_renderMobileMenuModal = __drhb_renderMobileMenuModal; }catch(_){ }
+try{ window.__drhb_openMobileMenuItemPreview = function(placedItem){
+  try{
+    if(!placedItem) return;
+    if(typeof closeMobileMenu==="function") try{ closeMobileMenu(); }catch(_){}
+    var modal = document.getElementById('card-detail-modal');
+    var titleEl = document.getElementById('detail-modal-title');
+    var contentEl = document.getElementById('detail-modal-content');
+    if(!modal || !titleEl || !contentEl) return;
+
+    var t = '';
+    try{ var tt = placedItem.querySelector('.title'); if(tt) t = (tt.textContent||'').trim(); }catch(_){}
+    if(!t){
+      try{ var did = placedItem.getAttribute('data-id') || placedItem.getAttribute('data-itemid') || ''; t = String(did||'').trim(); }catch(_){}
+    }
+    titleEl.textContent = t || 'Seçilen';
+
+    while(contentEl.firstChild) contentEl.removeChild(contentEl.firstChild);
+
+    var wrap = document.createElement('div');
+    wrap.style.display = 'flex';
+    wrap.style.justifyContent = 'center';
+    wrap.style.alignItems = 'flex-start';
+    wrap.style.padding = '18px 12px';
+
+    var clone = placedItem.cloneNode(true);
+    clone.classList.remove('is-active');
+    clone.style.position = 'relative';
+    clone.style.left = '0px';
+    clone.style.top = '0px';
+    clone.style.transform = 'scale(1.35)';
+    clone.style.transformOrigin = 'top center';
+    clone.style.margin = '0';
+    wrap.appendChild(clone);
+
+    contentEl.appendChild(wrap);
+
+    modal.classList.add('active');
+    modal.scrollTop = 0;
+  }catch(e){ try{ console.error('[DR][mobileMenu] preview failed', e); }catch(_){ } }
+}; }catch(_){}
+
+try{
+  (function(){
+    var g = document.getElementById('mobileMenuItemsGrid');
+    if(!g) return;
+    if(g.__drhbPreviewBound) return;
+    g.__drhbPreviewBound = true;
+    g.addEventListener('click', function(ev){
+      try{
+        var it = ev.target && ev.target.closest ? ev.target.closest('.placed-item') : null;
+        if(!it) return;
+        if(typeof window.__drhb_openMobileMenuItemPreview==='function') window.__drhb_openMobileMenuItemPreview(it);
+      }catch(e){}
+    });
+  })();
+}catch(_){}
   if(typeof window.D!=="function"){
     window.D = function(){ try{ console.debug.apply(console, arguments);}catch(_){ } };
   }
@@ -297,7 +359,7 @@ try{ window.__drhb_renderMobileMenuModal = __drhb_renderMobileMenuModal; }catch(
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Doktor Hasta Başı - V48</title>
+<title>Doktor Hasta Başı - V82</title>
 
 <style>
 
@@ -387,7 +449,7 @@ body{
   gap: 16px;                 /* eski haline yakın */
   align-content: flex-start;
   justify-content: center;   /* istersen: flex-start */
-  padding: 12px;
+  padding: 2px;
 }
 
 .dashboard-grid .kutu{
@@ -638,7 +700,7 @@ body{
 /* Sağ panel */
 .sag-icerik{
   width: var(--sag-w);
-  padding: 12px;
+  padding: 2px;
   background: var(--bg-page);
   overflow-y: auto;
 }
@@ -653,7 +715,7 @@ body{
   border: 1px solid var(--border);
   border-radius: var(--radius);
 
-  padding: 12px;
+  padding: 2px;
   box-shadow: var(--shadow-sm);
 
   cursor: pointer;
@@ -966,7 +1028,7 @@ border: 1px solid rgba(0,0,0,.08);
 
   width: min(420px, 92vw);
   margin: 10vh auto 0;
-  padding: 12px;
+  padding: 2px;
 
   position: relative;
   z-index: 20001;
@@ -1015,7 +1077,7 @@ border: 1px solid rgba(0,0,0,.08);
   font-size: 22px;
   line-height: 1;
 }
-.detail-modal-content{ padding: 12px; }
+.detail-modal-content{ padding: 2px; }
 
 /* =========================================================
    TABLET
@@ -1041,6 +1103,8 @@ border: 1px solid rgba(0,0,0,.08);
    MOBILE
    ========================================================= */
 @media (max-width: 768px){
+#pcCustomizeBtn{ display:none !important; }
+
   body.left-pinned .main-content-wrapper{ margin-left: 0 !important; }
   body.right-pinned .main-content-wrapper{ margin-right: 0 !important; }
 
@@ -1099,7 +1163,7 @@ border: 1px solid rgba(0,0,0,.08);
   /* === MODAL ARKA PLAN === */
   .menu-modal{
     background: rgba(0,0,0,.25);
-    padding: 12px;
+    padding: 2px;
   }
 
   /* === MODAL İÇ KART === */
@@ -1448,7 +1512,8 @@ body.right-pinned .edge-menu.right{
 
 /* Pinned modda hover davranışını etkisizleştir */
 body.left-pinned  .edge-menu.left:hover{ width: var(--edge-left-w) !important; flex-direction: row; }
-body.right-pinned .edge-menu.right:hover{ width: var(--edge-right-w) !important; }
+body.right-pinned .edge-menu.right:hover{ width: var(--edge-right-w) !important; flex-direction: row;}
+// CETCET body.right-pinned .edge-menu.right:hover{ width: var(--edge-right-w) !important; }
 
 /* Pinned modda tab yazısı kaybolsun */
 body.left-pinned  .edge-menu.left  body.right-pinned .edge-menu.right .edge-menu-tab{ display:none; }
@@ -1477,7 +1542,7 @@ body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
   min-width: 220px;
   min-height: 260px;
   box-sizing: border-box;
-  padding: 12px;
+  padding: 2px;
   overflow: visible;
 }
 
@@ -1499,7 +1564,7 @@ body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: 8px;
+  padding: 2px;
   user-select:none;
 }
 #edgeLeftItemsGrid .placed-item .tile-content{
@@ -1553,7 +1618,7 @@ body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
   min-width: 220px;
   min-height: 260px;
   box-sizing: border-box;
-  padding: 12px;
+  padding: 2px;
   overflow: visible;
 }
 
@@ -1575,7 +1640,7 @@ body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
   display:flex;
   align-items:center;
   justify-content:center;
-  padding: 8px;
+  padding: 2px;
   user-select:none;
 }
 #edgeRightItemsGrid .placed-item .tile-content{
@@ -1997,9 +2062,75 @@ body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
 }
 </style>
 <style>
+/* Edge tile formatting (iconPos / align / style layers) */
+#edgeRightItemsGrid .placed-item{
+  background: transparent;
+  padding:0;
+}
+#edgeRightItemsGrid .placed-item .style-layer{
+  position:absolute;
+  inset:0px;
+  pointer-events:none;
+  border-radius:12px;
+  opacity:1;
+  box-sizing:border-box;
+  transform:translateZ(0);
+  backface-visibility:hidden;
+  z-index:0;
+}
+#edgeRightItemsGrid .placed-item .style-layer.circle,
+#edgeRightItemsGrid .placed-item .style-layer.shape-circle{ border-radius:999px; }
+#edgeRightItemsGrid .placed-item .style-layer.rect{ border-radius:12px; }
+
+#edgeRightItemsGrid .placed-item .tile-content{
+  position:relative;
+  z-index:1;
+  width:100%;
+  height:100%;
+  display:flex;
+  padding:8px;
+  align-items: var(--tile-align-items, center);
+  justify-content: center;
+  gap:6px;
+  text-align:center;
+}
+#edgeRightItemsGrid .placed-item.icon-top .tile-content{ flex-direction:column; }
+#edgeRightItemsGrid .placed-item.icon-bottom .tile-content{ flex-direction:column-reverse; }
+#edgeRightItemsGrid .placed-item.icon-left .tile-content{
+  flex-direction:row;
+  justify-content: var(--tile-justify, flex-start);
+  text-align: var(--tile-text-align, left);
+}
+#edgeRightItemsGrid .placed-item.icon-right .tile-content{
+  flex-direction:row-reverse;
+  justify-content: var(--tile-justify, flex-start);
+  text-align: var(--tile-text-align, left);
+}
+#edgeRightItemsGrid .placed-item .icon{
+  font-size: var(--tile-icon-size, 24px);
+  line-height:1;
+  color: var(--tile-icon-color, inherit);
+}
+#edgeRightItemsGrid .placed-item .title{
+  font-family: var(--tile-font-family, inherit);
+  font-size: var(--tile-font-size, 14px);
+  font-weight: var(--tile-font-weight, 600);
+  color: var(--tile-font-color, inherit);
+  line-height:1.1;
+  width:100%;
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+</style>
+
+<style>
 /* Grid çizgilerini kapat */
 #edgeLeftItemsGrid,
-#edgeLeftItemsGrid.drhb-show-grid{
+#edgeLeftItemsGrid.drhb-show-grid,
+#edgeRightItemsGrid,
+#edgeRightItemsGrid.drhb-show-grid{
   background-image: none !important;
   background: transparent !important;
 }
@@ -2021,6 +2152,24 @@ body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
   border-radius: 999px !important;
 }
 </style>
+<style>
+/* Daire style'larda arkada dikdörtgen kalmasın */
+#edgeRightItemsGrid .placed-item{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+#edgeRightItemsGrid .placed-item.circle,
+#edgeRightItemsGrid .placed-item.shape-circle{
+  border-radius: 999px !important;
+  overflow: hidden !important; /* köşelerde beyaz kalmasın */
+}
+#edgeRightItemsGrid .placed-item.circle .style-layer,
+#edgeRightItemsGrid .placed-item.shape-circle .style-layer{
+  border-radius: 999px !important;
+}
+</style>
+
 <style>
 #edgeLeft{ width:18px; }
 #edgeLeft.is-open{ width: var(--edge-open-w, 360px); }
@@ -2076,7 +2225,7 @@ body.right-pinned .main-content-wrapper{ margin-right: var(--edge-right-w); }
 
 <style>
 #edgeLeft.edge-menu, #edgeRight.edge-menu{
-  top: calc(var(--hasta-h) + var(--hizli-h));
+  top: var(--edge-left-top, calc(var(--hasta-h) + var(--hizli-h)));
   bottom: 6px;
   transform: none;
   max-height: none;
@@ -2185,7 +2334,7 @@ function __drhb_applyEdgeLeftTopCssVar(){
 
   grid.addEventListener('click', function(e){
     const item = e.target.closest('.placed-item');
-    if(!item) return;
+    if(!item){ __drhb_dbg('no placed-item hit'); return; }
 
     grid.querySelectorAll('.placed-item.is-active')
       .forEach(el => el.classList.remove('is-active'));
@@ -2230,6 +2379,10 @@ body:not(.left-pinned) button.edge-pin[data-side="left"]{
 body.left-pinned button.edge-pin[data-side="left"]{
   transform: rotate(-90deg) !important;
 }
+//CETCET
+body.right-pinned button.edge-pin[data-side="right"]{
+  transform: rotate(-90deg) !important;
+}
 
 /* Geçiş yumuşak olsun */
 button.edge-pin[data-side="left"]{
@@ -2253,6 +2406,22 @@ body.left-pinned #edgeLeft:not(.is-collapsed) #edgeLeftItemsGrid{
   justify-content: start !important;
   justify-items: start !important;
 }
+
+//CETCET
+/* === V295: Pinned modda sağ boşluğu azaltmak için stretch (width:100%) kaldır === */
+body.right-pinned #edgeRight:not(.is-collapsed) #edgeRightItemsWrap,
+body.right-pinned #edgeRight:not(.is-collapsed) #edgeRightItemsGrid{
+  width: fit-content !important;
+  max-width: none !important;
+  min-width: 220px !important;
+}
+
+/* Grid'in içerikte sola yaslanması */
+body.right-pinned #edgeRight:not(.is-collapsed) #edgeRightItemsGrid{
+  justify-content: start !important;
+  justify-items: start !important;
+}
+
 </style>
 
 
@@ -2279,6 +2448,17 @@ body:not(.left-pinned) #edgeLeft button.edge-pin[data-side="left"]{
 body.left-pinned #edgeLeft button.edge-pin[data-side="left"]{
   transform: translateX(-50%) rotate(-90deg) !important;
 }
+//CETCET
+body:not(.right-pinned) #edgeRight button.edge-pin[data-side="right"]{
+  transform: translateX(-50%) rotate(0deg) !important;
+}
+
+/* Pinned iken: dikey pin + ortalama */
+body.right-pinned #edgeRight button.edge-pin[data-side="right"]{
+  transform: translateX(-50%) rotate(-90deg) !important;
+}
+
+
 </style>
 
 
@@ -2289,12 +2469,25 @@ body.left-pin-toggling #edgeLeft *{
   transition: none !important;
   animation: none !important;
 }
+//CETCET
+body.right-pin-toggling #edgeRight,
+body.right-pin-toggling #edgeRight *{
+  transition: none !important;
+  animation: none !important;
+}
 
 #edgeLeftHeader.edge-left-header-fixed .edge-pin.edge-left-pin-fixed{
   position: absolute !important;
   top: 1px !important;
   right: 0 !important;
 }
+//CETCET
+#edgeRightHeader.edge-right-header-fixed .edge-pin.edge-right-pin-fixed{
+  position: absolute !important;
+  top: 1px !important;
+  right: 0 !important;
+}
+
 </style>
 
 <script>
@@ -2499,6 +2692,37 @@ body.left-pinned button.edge-pin::after{
   box-shadow: inset 0 1px 1px rgba(0,0,0,.15);
   pointer-events: none;
 }
+//CETCET
+body.right-pinned button.edge-pin{
+  color: transparent !important;
+  text-shadow: none !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+}
+body.right-pinned button.edge-pin::before{
+  content: '';
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: #c62828;
+  box-shadow: 0 1px 2px rgba(0,0,0,.25), inset 0 1px 1px rgba(255,255,255,.35);
+}
+body.right-pinned button.edge-pin::after{
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%,-35%);
+  border-radius: 50%;
+  background: rgba(255,255,255,.75);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.15);
+  pointer-events: none;
+}
+
 </style>
 
 
@@ -2738,6 +2962,94 @@ body.left-pinned button.edge-pin::after{
 }
 </style>
 
+
+<style id="__v95_mobile_hide_right_edge">
+@media (max-width: 768px){
+  #edgeRight{
+    display: none !important;
+  }
+}
+</style>
+
+
+<style id="__v96_mobile_fullscreen_menu">
+@media (max-width: 768px){
+  #edgeLeft,
+  #edgeLeft.edge-menu{
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+  #edgeLeft .edge-menu-content{
+    height: 100%;
+  }
+}
+</style>
+
+
+<style id="__v97_mobile_fullscreen_modal">
+@media (max-width: 768px){
+  #mobile-menu-modal{
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    transform: none !important;
+  }
+  #mobileMenuItemsWrap,
+  #mobileMenuItemsGrid{
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
+}
+</style>
+
+
+<style id="__v98_mobile_menu_fullscreen_content">
+@media (max-width: 768px){
+  #mobile-menu-modal{
+    padding: 0 !important;
+  }
+  #mobile-menu-modal .menu-modal-content{
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    transform: none !important;
+  }
+  #mobile-menu-modal .menu-modal-content.mobile-menu-clean{
+    padding: 8px !important;
+  }
+  #mobileMenuItemsWrap,
+  #mobileMenuItemsGrid{
+    width: 100% !important;
+    height: calc(100vh - 16px) !important;
+    max-width: 100% !important;
+    max-height: calc(100vh - 16px) !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -2809,6 +3121,7 @@ body.left-pinned button.edge-pin::after{
 
 
             <button class="icon-btn" id="hizliBarToggleBtn" title="Hızlı Aksiyon Barını Aç/Kapat">⬇️</button>
+	    <button class="icon-btn" id="pcCustomizeBtn" title="Özelleştir">⚙️</button>
 	    <button class="icon-btn" id="mobileMenuToggle" title="Mobil Menü">☰</button>        </div>
     </div>
 </div>
@@ -3012,8 +3325,7 @@ body.left-pinned button.edge-pin::after{
     <div class="edge-menu-content">
   
       <div id="edgeLeftHeader" class="edge-left-header-fixed">
-        <button type="button" id="edgeLeftSettingsBtn" class="edge-left-settings-fixed" title="Özelleştir">⚙️</button>
-        <button type="button" class="edge-pin edge-left-pin-fixed" data-side="left" title="Menüyü sabitle / kulakçık moduna dön">📌</button>
+<button type="button" class="edge-pin edge-left-pin-fixed" data-side="left" title="Menüyü sabitle / kulakçık moduna dön">📌</button>
       </div>
       <div class="edge-left-divider-fixed"></div>
 <div class="drhb-edge-wrap" id="edgeLeftItemsWrap">
@@ -3029,8 +3341,7 @@ body.left-pinned button.edge-pin::after{
     <div class="edge-menu-tab">Hızlı İşlem</div>
     <div class="edge-menu-content">
       <div id="edgeRightHeader" class="edge-right-header-fixed">
-        <button type="button" id="edgeRightSettingsBtn" class="edge-right-settings-fixed" title="Özelleştir">⚙️</button>
-        <button type="button" class="edge-pin edge-right-pin-fixed" data-side="right" title="Menüyü sabitle / kulakçık moduna dön">📌</button>
+<button type="button" class="edge-pin edge-right-pin-fixed" data-side="right" title="Menüyü sabitle / kulakçık moduna dön">📌</button>
       </div>
       <div class="edge-right-divider-fixed"></div>
       <div class="drhb-edge-wrap" id="edgeRightItemsWrap">
@@ -4045,7 +4356,8 @@ function openCardDetailModal(kutu) {
     }
     
     detailModalContent.appendChild(clone);
-    mobileDetailModal.classList.add('active');
+    __drhb_dbg('detail modal active');
+      mobileDetailModal.classList.add('active');
     mobileDetailModal.scrollTop = 0;
 }
 function closeCardDetailModal() {
@@ -4686,6 +4998,134 @@ if (mobileMenuModal) {
   mobileMenuModal.addEventListener('click', (e) => {
     if (e.target === mobileMenuModal) closeMobileMenu(); // sadece backdrop'a tıklanınca
   });
+
+
+/* === V53: Mobile Menu tile -> small detail modal (touch/pointer safe) === */
+(function(){
+  var lastTapAt = 0;
+
+  function isMobileNow(){
+    try{ return window.matchMedia && window.matchMedia("(max-width: 768px)").matches; }catch(_){ return false; }
+  }
+
+  
+  function __drhb_dbg(){
+    try{
+      var args = Array.prototype.slice.call(arguments);
+      console.log.apply(console, ['[DR][MDBG]'].concat(args));
+      var el = document.getElementById('__drhb_dbg_toast');
+      if(!el){
+        el = document.createElement('div');
+        el.id='__drhb_dbg_toast';
+        el.style.position='fixed';
+        el.style.left='8px';
+        el.style.right='8px';
+        el.style.bottom='8px';
+        el.style.zIndex='2147483647';
+        el.style.background='rgba(0,0,0,.72)';
+        el.style.color='#fff';
+        el.style.fontSize='12px';
+        el.style.padding='8px 10px';
+        el.style.borderRadius='10px';
+        el.style.pointerEvents='none';
+        el.style.maxHeight='38vh';
+        el.style.overflow='hidden';
+        document.body.appendChild(el);
+      }
+      var txt = args.map(function(a){
+        try{ return (typeof a==='string')?a:JSON.stringify(a); }catch(e){ return String(a); }
+      }).join(' ');
+      el.textContent = txt;
+      clearTimeout(window.__drhb_dbg_toast_t);
+      window.__drhb_dbg_toast_t = setTimeout(function(){ try{ el.textContent=''; }catch(e){} }, 1600);
+    }catch(e){}
+  }
+
+function openTileDetailFromPlacedItem(item){
+    try{
+      if(!item){ __drhb_dbg('no placed-item hit'); return; }
+      if(!mobileDetailModal || !detailModalContent || !detailModalTitle) return;
+
+      var titleEl = item.querySelector('.title');
+      var t = titleEl ? (titleEl.textContent || '').trim() : '';
+      if(!t) t = (item.getAttribute('data-id') || item.id || 'Seçilen');
+
+      detailModalTitle.textContent = t;
+      detailModalContent.innerHTML = "";
+
+      var wrap = document.createElement('div');
+      wrap.style.display = 'flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.justifyContent = 'center';
+      wrap.style.padding = '18px 12px';
+
+      var clone = item.cloneNode(true);
+
+      // reset absolute placement styles so it can be centered
+      try{
+        clone.style.position = 'relative';
+        clone.style.left = '';
+        clone.style.top = '';
+        clone.style.right = '';
+        clone.style.bottom = '';
+        clone.style.transform = '';
+        clone.style.margin = '0';
+      }catch(_){}
+
+      // give a comfortable preview size if tile has no size
+      try{
+        if(!(clone.style.width && clone.style.width.length)) clone.style.width = '240px';
+        if(!(clone.style.height && clone.style.height.length)) clone.style.height = '120px';
+      }catch(_){}
+
+      wrap.appendChild(clone);
+      detailModalContent.appendChild(wrap);
+
+      __drhb_dbg('detail modal active');
+      mobileDetailModal.classList.add('active');
+      try{ document.body.style.overflow = 'hidden'; }catch(_){}
+    }catch(e){ try{ console.error('[DR][mobileMenu] tile preview failed', e); }catch(_){ } }
+  }
+
+  function handler(ev){
+    try{
+      __drhb_dbg('evt', ev && ev.type, 'target', (ev&&ev.target&&ev.target.tagName)||null);
+      __drhb_dbg('menuModal', !!mobileMenuModal, mobileMenuModal?mobileMenuModal.className:null);
+
+      if(!isMobileNow()) return;
+
+      // Only when mobile menu is open
+      if(!mobileMenuModal){ __drhb_dbg('no mobileMenuModal'); return; }
+      if(!mobileMenuModal.classList.contains('active')){ __drhb_dbg('menu not active'); return; }
+
+      var target = ev && ev.target ? ev.target : null;
+      if(!target){ __drhb_dbg('no target'); return; }
+      if(!target.closest){ __drhb_dbg('no closest'); return; }
+
+      var item = target.closest('#mobileMenuItemsGrid .placed-item');
+      __drhb_dbg('hit', !!item, item? (item.getAttribute('data-id')||'') : '');
+      if(!item){ __drhb_dbg('no placed-item hit'); return; }
+
+      // avoid double-fire (pointerup -> click)
+      var now = Date.now();
+      if(now - lastTapAt < 450) { lastTapAt = now; try{ ev.preventDefault(); ev.stopPropagation(); }catch(_){} return; }
+      lastTapAt = now;
+
+      try{ ev.preventDefault(); }catch(_){}
+      try{ ev.stopPropagation(); }catch(_){}
+
+      // close menu first, then show
+      try{ closeMobileMenu(); }catch(_){}
+      __drhb_dbg('opening detail');
+      setTimeout(function(){ __drhb_dbg('openTileDetail call'); openTileDetailFromPlacedItem(item); }, 0);
+    }catch(_){}
+  }
+
+  // Capture phase makes it resilient to other handlers
+  document.addEventListener('pointerup', handler, true);
+  document.addEventListener('touchend', handler, {capture:true, passive:false});
+  document.addEventListener('click', handler, true);
+})();
 }
 
 
@@ -6787,8 +7227,7 @@ edge.addEventListener("transitionend", ()=>{
     inFit = true;
     pending = false;
     try{
-      if(window.__edgeRightRender){ window.__edgeRightRender(reason || "fit", edgeW); }
-      else{ try{ console.warn("[DR][edgeRight] render missing", {reason:reason || "fit", edgeW:edgeW}); }catch(_){ } }
+      /* edgeLeft fit: do not touch edgeRight */
       try{
         var root = document.documentElement;
         var gridEl = document.getElementById('edgeRightItemsGrid');
@@ -8207,21 +8646,13 @@ body:not(.left-pinned) #edgeLeft .edge-resize{ pointer-events:none !important; o
   }
 
   window.addEventListener("load", function(){
-    var b = document.getElementById("edgeLeftSettingsBtn");
-    if(!b) return;
-    b.addEventListener("click", function(ev){
-      try{ ev.preventDefault(); ev.stopPropagation(); }catch(e){}
-      location.href = "drhastabasiozellestir.html" + buildQs();
-    }, true);
-    var b2 = document.getElementById("edgeRightSettingsBtn");
-    if(b2){
-      b2.addEventListener("click", function(ev){
+    var b = document.getElementById("pcCustomizeBtn");
+    if(b){
+      b.addEventListener("click", function(ev){
         try{ ev.preventDefault(); ev.stopPropagation(); }catch(e){}
         location.href = "drhastabasiozellestir.html" + buildQs();
       }, true);
-    }
-
-  });
+    }});
 })();
 </script>
 
@@ -8299,5 +8730,275 @@ body:not(.left-pinned) #edgeLeft .edge-resize{ pointer-events:none !important; o
   };
 })();
 </script>
+<script>
+(function(){
+  function bind(){
+    document.addEventListener('click', function(ev){
+      try{
+        var t = ev.target;
+        if(!t) return;
+        var it = t.closest ? t.closest('#mobileMenuItemsGrid .placed-item') : null;
+        if(!it) return;
+        if(typeof window.__drhb_openMobileMenuItemPreview === 'function'){
+          window.__drhb_openMobileMenuItemPreview(it);
+        }else{
+          try{ console.warn('[DR][mobileMenu] preview fn missing'); }catch(_){}
+        }
+      }catch(_){}
+    }, true);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind, {once:true});
+  else bind();
+})();
+</script>
+
+<style>
+/* === V54 FIX: Mobile menu hit-test (parmak basma) === */
+/* İç katmanlar event yakalamasın, container alsın */
+#mobileMenuItemsGrid .style-layer,
+#mobileMenuItemsGrid .tile-content,
+#mobileMenuItemsGrid .icon,
+#mobileMenuItemsGrid .title{
+  pointer-events: none !important;
+}
+#mobileMenuItemsGrid .placed-item{
+  pointer-events: auto !important;
+}
+</style>
+
+<script id="__v94_edge_visibility">
+(function(){
+  function readRaw(key){
+    try{ if(typeof getConfigRaw==="function"){ var v=getConfigRaw(key); if(v!=null && v!=="") return v; } }catch(_){}
+    try{ var v2 = localStorage.getItem(key); if(v2!=null && v2!=="") return v2; }catch(_){}
+    return null;
+  }
+  function parseBool(v){
+    if(v==null) return null;
+    if(typeof v === "boolean") return v;
+    if(typeof v === "number") return v!==0;
+    if(typeof v !== "string") return null;
+    var s=v.trim().toLowerCase();
+    if(!s) return null;
+    if(s==="1"||s==="true"||s==="yes"||s==="on"||s==="evet") return true;
+    if(s==="0"||s==="false"||s==="no"||s==="off"||s==="hayir"||s==="hayır") return false;
+    return null;
+  }
+  function readVisible(side){
+    var keys = side==="left"
+      ? ["edgeLeftVisible","edgeLeftShow","solKulakcikVisible","solKulakcikGorunsun","solKulakVisible","solKulakGorunsun","kulakcikSolVisible","kulakcikSolGorunsun","edgeLeftMenuVisible","edgeLeftMenuShow"]
+      : ["edgeRightVisible","edgeRightShow","sagKulakcikVisible","sagKulakcikGorunsun","sagKulakVisible","sagKulakGorunsun","kulakcikSagVisible","kulakcikSagGorunsun","edgeRightMenuVisible","edgeRightMenuShow"];
+    for(var i=0;i<keys.length;i++){
+      var raw = readRaw(keys[i]);
+      var b = parseBool(raw);
+      if(b!==null) return b;
+    }
+    // If config stores a JSON with {enabled:true/false} etc.
+    var jkeys = side==="left"
+      ? ["edgeLeftConfig","edgeLeftSettings","solKulakcikConfig","kulakcikSolConfig"]
+      : ["edgeRightConfig","edgeRightSettings","sagKulakcikConfig","kulakcikSagConfig"];
+    for(var k=0;k<jkeys.length;k++){
+      var rawj = readRaw(jkeys[k]);
+      if(!rawj) continue;
+      try{
+        var o = (typeof rawj==="string") ? JSON.parse(rawj) : rawj;
+        if(o && typeof o==="object"){
+          var v = (o.visible!=null)?o.visible:(o.gorunsun!=null?o.gorunsun:(o.enabled!=null?o.enabled:null));
+          var bb = parseBool(v);
+          if(bb!==null) return bb;
+        }
+      }catch(_){}
+    }
+    return true; // default visible
+  }
+
+  function apply(){
+    var leftVisible  = readVisible("left");
+    var rightVisible = readVisible("right");
+
+    var el = document.getElementById("edgeLeft");
+    var er = document.getElementById("edgeRight");
+
+    if(el){
+      el.style.display = leftVisible ? "" : "none";
+      try{
+        if(!leftVisible){
+          document.body.classList.remove("left-pinned","left-resizing");
+          document.documentElement.style.setProperty("--edge-left-w","0px");
+          var mcw = document.querySelector(".main-content-wrapper");
+          if(mcw) mcw.style.marginLeft = "0px";
+        }
+      }catch(_){}
+    }
+    if(er){
+      er.style.display = rightVisible ? "" : "none";
+      try{
+        if(!rightVisible){
+          document.body.classList.remove("right-pinned","right-resizing");
+          document.documentElement.style.setProperty("--edge-right-w","0px");
+          var mcw2 = document.querySelector(".main-content-wrapper");
+          if(mcw2) mcw2.style.marginRight = "0px";
+        }
+      }catch(_){}
+    }
+  }
+
+  apply();
+
+  // If host notifies config changes, react.
+  window.addEventListener("drhb:config-changed", apply);
+
+  // Also re-apply after load to catch late config injection.
+  window.addEventListener("load", function(){ setTimeout(apply, 0); setTimeout(apply, 250); });
+
+})();
+</script>
+
 </body>
 </html>
+
+<style>
+/* FIX: pinned-right item visibility */
+body.right-pinned #edgeRight .edge-menu-content{
+  overflow: auto !important;
+}
+body.right-pinned #edgeRightItemsWrap{
+  overflow: visible !important;
+}
+body.right-pinned #edgeRightItemsGrid{
+  min-height: calc(100vh - 140px) !important;
+}
+</style>
+
+
+<style>
+/* RIGHT EDGE: make top/pin/inner-layout match LEFT */
+:root{ --edge-right-top: var(--edge-left-top, calc(var(--hasta-h) + var(--hizli-h))); }
+
+#edgeRight.edge-menu{
+  top: var(--edge-right-top) !important;
+  transform: none !important;
+  height: calc(100vh - var(--edge-right-top)) !important;
+  max-height: none !important;
+}
+#edgeRight.edge-menu .edge-menu-content{ height:100% !important; }
+
+.edge-menu.right{
+  display:flex !important;
+  flex-direction: row-reverse !important; /* content inner (left), tab outer (right) */
+}
+.edge-menu.right .edge-menu-tab{
+  border-radius: 0 10px 10px 0 !important;
+}
+
+/* Ensure pinned hides the tab on BOTH sides (was broken selector before) */
+body.left-pinned  #edgeLeft  .edge-menu-tab{ display:none !important; }
+body.right-pinned #edgeRight .edge-menu-tab{ display:none !important; }
+
+/* Match left padding rhythm on right */
+#edgeRightItemsWrap{
+  padding: 2px !important;
+  overflow: visible !important;
+}
+
+/* Pinned: content scroll like left */
+body.right-pinned #edgeRight .edge-menu-content{
+  overflow: auto !important;
+}
+</style>
+
+
+<style>
+/* === EDGE TOP: anchor to actual bottom of the 2nd header row (wrap-safe) === */
+:root{
+  --edge-left-top: 120px;  /* JS will overwrite */
+  --edge-right-top: 120px; /* JS will overwrite */
+}
+#edgeLeft.edge-menu{
+  top: var(--edge-left-top) !important;
+  transform: none !important;
+  height: calc(100vh - var(--edge-left-top)) !important;
+  max-height: none !important;
+}
+#edgeRight.edge-menu{
+  top: var(--edge-right-top) !important;
+  transform: none !important;
+  height: calc(100vh - var(--edge-right-top)) !important;
+  max-height: none !important;
+}
+
+/* === PIN: centered like left (top-center) === */
+#edgeLeft .edge-pin,
+#edgeRight .edge-pin{
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+}
+
+/* === RIGHT EDGE: mirror LEFT behavior cleanly (tab outside, content inside) === */
+.edge-menu.right{
+  display:flex !important;
+  flex-direction: row !important; /* keep tab on the outside (right) */
+}
+.edge-menu.right .edge-menu-tab{
+  border-radius: 10px 0 0 10px !important;
+}
+
+/* pinned: hide tab correctly on both sides */
+body.left-pinned  #edgeLeft  .edge-menu-tab{ display:none !important; }
+body.right-pinned #edgeRight .edge-menu-tab{ display:none !important; }
+
+/* pinned hover disable – both sides */
+body.left-pinned  #edgeLeft.edge-menu.left:hover{ width: var(--edge-left-w) !important; flex-direction: row !important; }
+body.right-pinned #edgeRight.edge-menu.right:hover{ width: var(--edge-right-w) !important; flex-direction: row !important;}
+
+/* pinned: right scroll like left */
+body.right-pinned #edgeRight .edge-menu-content{ overflow:auto !important; }
+
+/* keep wrap padding consistent */
+#edgeRightItemsWrap{ padding: 2px !important; }
+</style>
+
+
+<script>
+(function(){
+  function __drhb_setEdgeTops(){
+    try{
+      var bar = document.getElementById('hizli-aksiyon-bar') || document.getElementById('hasta-ozet');
+      if(!bar) return;
+      var r = bar.getBoundingClientRect();
+      var top = Math.max(0, Math.round(r.bottom));
+      // small safety gap so it never sits under the header border
+      top = top + 2;
+      try{
+        document.documentElement.style.setProperty('--edge-left-top', top + 'px');
+        document.documentElement.style.setProperty('--edge-right-top', top + 'px');
+      }catch(_){}
+    }catch(_){}
+  }
+
+  function __drhb_bindEdgeTopRecalc(){
+    try{
+      __drhb_setEdgeTops();
+      window.addEventListener('resize', __drhb_setEdgeTops, {passive:true});
+      window.addEventListener('orientationchange', __drhb_setEdgeTops, {passive:true});
+      // re-check after layout settles (font load / wrap)
+      setTimeout(__drhb_setEdgeTops, 50);
+      setTimeout(__drhb_setEdgeTops, 200);
+      setTimeout(__drhb_setEdgeTops, 600);
+
+      var target = document.getElementById('hizli-aksiyon-bar') || document.getElementById('hasta-ozet');
+      if(target && window.MutationObserver){
+        var mo = new MutationObserver(function(){ __drhb_setEdgeTops(); });
+        mo.observe(target, {subtree:true, childList:true, characterData:true, attributes:true});
+      }
+    }catch(_){}
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', __drhb_bindEdgeTopRecalc);
+  }else{
+    __drhb_bindEdgeTopRecalc();
+  }
+})();
+</script>
